@@ -1,0 +1,5 @@
+{
+  "context": "The NEAR Protocol is a layer-1 blockchain designed for usability and scalability. It uses a proof-of-stake consensus mechanism called Nightshade, which shards the network dynamically. NEAR was founded in 2018 and its mainnet launched in April 2020. The native token is also called NEAR and is used for transaction fees, staking, and governance. Developers on NEAR can write smart contracts in Rust or AssemblyScript.",
+  "question": "What consensus mechanism does NEAR Protocol use?",
+  "expected_keywords": ["Nightshade", "proof-of-stake", "shards"]
+}

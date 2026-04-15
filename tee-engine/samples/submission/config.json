@@ -1,0 +1,5 @@
+{
+  "model": "near:deepseek-r1",
+  "temperature": 0.3,
+  "max_tokens": 512
+}
