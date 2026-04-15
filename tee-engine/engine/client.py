@@ -32,7 +32,17 @@ import certifi
 import httpx
 from openai import OpenAI
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional local-dev dependency
+    def load_dotenv(*args: Any, **kwargs: Any) -> bool:
+        return False
+
 from .tracker import TokenTracker
+
+# Load a local .env for developer convenience.
+# In production, the runtime should inject secrets as real environment vars.
+load_dotenv()
 
 # ------------------------------------------------------------------
 # Defaults — can be overridden at construction time

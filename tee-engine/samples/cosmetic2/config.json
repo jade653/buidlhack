@@ -1,0 +1,11 @@
+{
+  "model": "openai/gpt-oss-120b",
+  "temperature": 0.45,
+  "max_tokens": 2200,
+  "role_models": {
+    "brand_strategist": "openai/gpt-5.2",
+    "copywriter": "Qwen/Qwen3.5-122B-A10B",
+    "merch_editor": "deepseek-ai/DeepSeek-V3.1",
+    "reviewer": "openai/gpt-oss-120b"
+  }
+}

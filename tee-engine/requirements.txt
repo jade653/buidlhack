@@ -4,13 +4,16 @@
 #   pip install -r requirements.txt
 
 # Sandbox
-RestrictedPython>=7.0,<8.0
+RestrictedPython>=7.0,<8.0; python_version < "3.14"
+RestrictedPython>=8.1,<9.0; python_version >= "3.14"
 
 # LLM client (OpenAI-compatible, used for Near AI Cloud)
 openai>=1.0,<2.0
+python-dotenv>=1.0,<2.0
 
-# Optional: AI frameworks the user's harness may import.
-# Install these for local testing of LangGraph / CrewAI harnesses.
-# langgraph>=0.1
+# AI frameworks used by the sample harness.
+langgraph>=0.2,<1.0
+langchain-core>=0.3,<1.0
+
+# Optional: install these too if you want to test CrewAI-based harnesses locally.
 # crewai>=0.1
-# langchain>=0.2

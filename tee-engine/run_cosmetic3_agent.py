@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 """
-Run the cosmetics storefront generation sample and save the generated HTML.
+Run the cinematic cosmetics storefront package and save the generated HTML.
 
 Usage:
-    python run_cosmetics_agent.py
-
-Use a real NEAR AI Cloud key:
-    python run_cosmetics_agent.py
+    python run_cosmetic3_agent.py
 """
 
 from __future__ import annotations
@@ -21,9 +18,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from engine import run_submission
 
 ROOT = Path(__file__).parent
-SUBMISSION_DIR = ROOT / "samples" / "cosmetic1"
+SUBMISSION_DIR = ROOT / "samples" / "cosmetic3"
 CHALLENGE_INPUT = ROOT / "samples" / "cosmetics_challenge_input.json"
-OUTPUT_HTML = ROOT / "outputs" / "luma-dew-storefront.html"
+OUTPUT_HTML = ROOT / "outputs" / "luma-dew-storefront-cosmetic3.html"
 
 
 def parse_args() -> argparse.Namespace:
@@ -36,15 +33,16 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+
 def normalize_html_output(text: str) -> str:
     cleaned = text.strip()
     if cleaned.startswith("```"):
-        lines = cleaned.splitlines()
-        if lines:
-            lines = lines[1:]
-        if lines and lines[-1].strip() == "```":
-            lines = lines[:-1]
-        cleaned = "\n".join(lines).strip()
+      lines = cleaned.splitlines()
+      if lines:
+          lines = lines[1:]
+      if lines and lines[-1].strip() == "```":
+          lines = lines[:-1]
+      cleaned = "\n".join(lines).strip()
     return cleaned
 
 
@@ -64,20 +62,20 @@ def main() -> int:
     challenge_input = json.loads(CHALLENGE_INPUT.read_text(encoding="utf-8"))
 
     print("=" * 60)
-    print("TEE Engine — Cosmetics Storefront Sample")
+    print("TEE Engine — Cosmetics Storefront Sample (cosmetic3)")
     print("=" * 60)
     print(f"Submission : {SUBMISSION_DIR}")
     print(f"Challenge   : {CHALLENGE_INPUT}")
     print(f"Output HTML : {args.output}")
     print()
 
-    MAX_ATTEMPTS = 3
+    max_attempts = 3
     output_html = ""
     result = None
 
-    for attempt in range(1, MAX_ATTEMPTS + 1):
+    for attempt in range(1, max_attempts + 1):
         if attempt > 1:
-            print(f"\n[RETRY] Attempt {attempt}/{MAX_ATTEMPTS}...")
+            print(f"\n[RETRY] Attempt {attempt}/{max_attempts}...")
 
         result = run_submission(
             submission_dir=SUBMISSION_DIR,
@@ -93,31 +91,31 @@ def main() -> int:
 
         if result.error:
             print(f"\n[ERROR]\n{result.error}")
-            if attempt == MAX_ATTEMPTS:
+            if attempt == max_attempts:
                 return 1
             continue
 
         output_html = normalize_html_output(str(result.output or ""))
         if not output_html:
             print("\n[WARN] No HTML returned by harness.")
-            if attempt == MAX_ATTEMPTS:
+            if attempt == max_attempts:
                 return 1
             continue
 
         if not looks_like_complete_html(output_html):
             print("\n[WARN] Incomplete HTML — retrying.")
-            if attempt == MAX_ATTEMPTS:
+            if attempt == max_attempts:
                 print("[ERROR] All attempts produced incomplete HTML. Nothing was saved.")
                 return 1
             continue
 
-        break  # success
+        break
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(output_html, encoding="utf-8")
 
     print(f"\nSaved HTML to: {args.output}")
-    if result.metadata.get("printed_output"):
+    if result and result.metadata.get("printed_output"):
         print("\n--- Captured print output ---")
         print(result.metadata["printed_output"])
 

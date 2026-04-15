@@ -27,8 +27,8 @@ Quick start
     from engine import run_submission
 
     result = run_submission(
-        submission_dir="samples/submission",
-        challenge_input={"text": "The sky is blue.", "question": "What colour?"},
+        submission_dir="samples/cosmetic1",
+        challenge_input={"brand": "Luma Dew", "products": []},
     )
     print(result.status, result.score, result.output)
 """

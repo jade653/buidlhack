@@ -1,5 +1,0 @@
-{
-  "model": "deepseek-ai/DeepSeek-V3.1",
-  "temperature": 0.35,
-  "max_tokens": 40960
-}

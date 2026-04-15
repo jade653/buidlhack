@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 """
-Local test runner for the sample submission.
+Local test runner for the cosmetics landing package.
 
 Run from tee-engine/:
     python run_sample.py
 
 Uses MockNearAIClient by default so no API key is needed.
-Set NEAR_AI_API_KEY to use the real Near AI Cloud endpoint.
-
-Options:
-    --real   Force the real client even if NEAR_AI_API_KEY is set in env.
 """
 
 import json
@@ -21,8 +17,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from engine import run_submission
 
-SUBMISSION_DIR   = Path(__file__).parent / "samples" / "submission"
-CHALLENGE_INPUT  = Path(__file__).parent / "samples" / "challenge_input.json"
+SUBMISSION_DIR   = Path(__file__).parent / "samples" / "cosmetic1"
+CHALLENGE_INPUT  = Path(__file__).parent / "samples" / "cosmetics_challenge_input.json"
 
 
 def main():
@@ -35,16 +31,16 @@ def main():
     print(f"Challenge  : {CHALLENGE_INPUT}")
     print()
 
-    # MockNearAIClient returns a canned answer that intentionally contains
-    # "Nightshade" and "proof-of-stake" so the score comes out > 0.
+    # The cosmetics package makes two short LLM calls for copywriting and review.
     mock_answers = [
-        "NEAR Protocol uses Nightshade, a proof-of-stake consensus mechanism "
-        "that enables dynamic sharding of the network."
+        "badge: Soft ritual edit\ntitle: Clinical glow, softened into a beautiful daily ritual.\nbody: Three tactile essentials for cleansing, brightening, and sealing in comfort with a polished shelf presence.\ncta: Shop Luma Dew\nbenefit_title: Built for skin that wants radiance without overload.\nbenefit_body: A concise lineup of cruelty-free formulas designed to feel elegant from sink to vanity.",
+        "badge: Soft ritual edit\ntitle: Clinical glow, softened into a beautiful daily ritual.\nbody: Three tactile essentials for cleansing, brightening, and sealing in comfort with a polished shelf presence.\ncta: Shop Luma Dew\nbenefit_title: Built for skin that wants radiance without overload.\nbenefit_body: A concise lineup of cruelty-free formulas designed to feel elegant from sink to vanity.",
     ]
 
     result = run_submission(
         submission_dir=SUBMISSION_DIR,
         challenge_input=challenge_input,
+        use_mock_client=True,
         mock_responses=mock_answers,
     )
 

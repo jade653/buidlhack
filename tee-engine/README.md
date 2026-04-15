@@ -17,13 +17,16 @@ tee-engine/
 │   ├── sandbox.py      RestrictedPython sandbox: compile + exec with guards
 │   └── runner.py       run_submission() — ties everything together
 ├── samples/
-│   ├── challenge_input.json        Example challenge payload
-│   └── submission/
-│       ├── harness.py              Example agent (single-turn QA)
-│       ├── agent.md                System prompt for the agent
-│       ├── config.json             Model + generation config
-│       └── rag/documents/          Optional RAG source files
-├── run_sample.py       Local test runner (no API key needed)
+│   ├── cosmetics_challenge_input.json     Example cosmetics challenge payload
+│   ├── cosmetic1/                         Baseline cosmetics landing package
+│   ├── cosmetic2/                         Higher-fidelity cosmetics landing package
+│   └── cosmetic3/                         Cinematic motion-heavy cosmetics package
+├── docs/
+│   └── agent-package-format.md     User upload package specification
+├── run_sample.py       Local mock test runner
+├── run_cosmetics_agent.py   Real Near AI runner for cosmetic1
+├── run_cosmetic2_agent.py   Real Near AI runner for cosmetic2
+├── run_cosmetic3_agent.py   Real Near AI runner for cosmetic3
 └── requirements.txt
 ```
 
@@ -43,6 +46,15 @@ tee-engine/
 
 ## Harness contract
 
+For the end-user upload format, see
+[docs/agent-package-format.md](/Users/jade/projects/buidl/buidlhack/tee-engine/docs/agent-package-format.md).
+For the baseline cosmetics package, see
+[samples/cosmetic1](/Users/jade/projects/buidl/buidlhack/tee-engine/samples/cosmetic1).
+For a higher-fidelity version using the same assets and brief, see
+[samples/cosmetic2](/Users/jade/projects/buidl/buidlhack/tee-engine/samples/cosmetic2).
+For a cinematic, motion-heavy version using a different model mix, see
+[samples/cosmetic3](/Users/jade/projects/buidl/buidlhack/tee-engine/samples/cosmetic3).
+
 Every submission must contain `harness.py` and `agent.md`.
 
 `harness.py` receives these injected globals at runtime:
@@ -54,6 +66,10 @@ Every submission must contain `harness.py` and `agent.md`.
 | `agent_prompt` | `str` | Contents of `agent.md` |
 | `submission_config` | `SubmissionConfig` | Parsed `config.json` (or defaults) |
 | `rag_docs` | `dict[str, str]` | `{filename: text}` from `rag/documents/` |
+
+Unknown keys from `config.json` are preserved in `submission_config.extra`, so
+submission packages can carry extra metadata such as per-role model routing for
+multi-agent workflows.
 
 `harness.py` must produce a `result` dict before it exits:
 
@@ -105,20 +121,30 @@ cd tee-engine
 pip install -r requirements.txt
 ```
 
-### 2. Run the sample (no API key needed)
+`requirements.txt` includes a Python-version-specific `RestrictedPython` pin,
+so the setup works on both pre-3.14 environments and Python 3.14+.
+
+### 2. Run the package locally with mock responses
 
 ```bash
 python run_sample.py
 ```
 
-The sample uses `MockNearAIClient` when `NEAR_AI_API_KEY` is not set.
+This runs the baseline `cosmetic1` package with mocked copywriting responses and
+returns a complete single-file storefront HTML string with three embedded
+product illustrations.
 
 ### 3. Run against real Near AI Cloud
 
 ```bash
-export NEAR_AI_API_KEY="your-key-here"
-python run_sample.py
+python run_cosmetics_agent.py
+python run_cosmetic2_agent.py
+python run_cosmetic3_agent.py
 ```
+
+For local development, a `.env` file containing `NEAR_AI_API_KEY=...` is also
+loaded automatically. In production, the service should inject
+`NEAR_AI_API_KEY` as a real environment variable or secret.
 
 ### 4. Use the API programmatically
 
@@ -127,8 +153,8 @@ import json
 from engine import run_submission
 
 result = run_submission(
-    submission_dir="samples/submission",
-    challenge_input=json.load(open("samples/challenge_input.json")),
+    submission_dir="samples/cosmetic1",
+    challenge_input=json.load(open("samples/cosmetics_challenge_input.json")),
 )
 
 print(result.status)          # "success" | "error" | "timeout"
@@ -184,7 +210,27 @@ chunked embedding pipeline. Inject a retriever object instead of the raw
 `rag_docs` dict so harnesses can do semantic search.
 
 **LangGraph / CrewAI harnesses**: these frameworks work out of the box —
-they're on the module allowlist. The harness can import and use them freely.
+they're on the module allowlist. The example
+`samples/cosmetic1/harness.py` shows one practical pattern:
+use small role-based LLM calls for copy, then assemble the final HTML
+deterministically in Python so the storefront stays stable.
+
+The example also shows role-based model routing via `submission_config.extra`:
+
+```json
+{
+  "model": "openai/gpt-oss-120b",
+  "role_models": {
+    "copywriter": "openai/gpt-5.2",
+    "reviewer": "openai/gpt-oss-120b"
+  }
+}
+```
+
+As of April 15, 2026, these model IDs are listed on NEAR AI's official
+Available Models page:
+[docs.near.ai/cloud/models](https://docs.near.ai/cloud/models/).
+
 Async harnesses are not currently supported (the sandbox is synchronous).
 
 **Streaming**: `SandboxedNearAIClient.chat()` uses non-streaming completions.
