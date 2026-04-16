@@ -1,0 +1,9 @@
+{
+  "model": "openai/gpt-oss-120b",
+  "temperature": 0.35,
+  "max_tokens": 1200,
+  "role_models": {
+    "copywriter": "openai/gpt-5.2",
+    "reviewer": "openai/gpt-oss-120b"
+  }
+}

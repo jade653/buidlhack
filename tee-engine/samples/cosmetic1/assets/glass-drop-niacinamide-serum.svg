@@ -1,0 +1,18 @@
+<svg width="800" height="960" viewBox="0 0 800 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="960" rx="48" fill="#EEEAF8"/>
+  <ellipse cx="402" cy="814" rx="184" ry="42" fill="#BEB6D8" fill-opacity="0.32"/>
+  <rect x="320" y="138" width="160" height="140" rx="28" fill="#CABFE8"/>
+  <rect x="352" y="104" width="96" height="74" rx="20" fill="#1E2238"/>
+  <rect x="246" y="246" width="308" height="462" rx="68" fill="url(#bottleBody)" fill-opacity="0.92"/>
+  <rect x="286" y="326" width="228" height="196" rx="34" fill="#FFFFFF" fill-opacity="0.84"/>
+  <text x="400" y="392" text-anchor="middle" fill="#4C4971" font-family="Georgia, serif" font-size="32">GLASS DROP</text>
+  <text x="400" y="434" text-anchor="middle" fill="#4C4971" font-family="Arial, sans-serif" font-size="22" letter-spacing="3">NIACINAMIDE</text>
+  <text x="400" y="474" text-anchor="middle" fill="#75719C" font-family="Arial, sans-serif" font-size="16" letter-spacing="2">TEXTURE REFINING SERUM</text>
+  <rect x="302" y="744" width="196" height="36" rx="18" fill="#B6A8DD"/>
+  <defs>
+    <linearGradient id="bottleBody" x1="246" y1="246" x2="554" y2="708" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FAF8FF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#CDBEEB" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+</svg>

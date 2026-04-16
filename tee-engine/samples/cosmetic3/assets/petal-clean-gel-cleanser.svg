@@ -1,0 +1,20 @@
+<svg width="800" height="960" viewBox="0 0 800 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="960" rx="48" fill="#F8ECE7"/>
+  <ellipse cx="402" cy="816" rx="196" ry="48" fill="#D3C1B9" fill-opacity="0.35"/>
+  <rect x="248" y="164" width="304" height="560" rx="68" fill="url(#tubeBody)"/>
+  <rect x="300" y="122" width="200" height="88" rx="34" fill="#F5D8CF"/>
+  <rect x="322" y="244" width="156" height="10" rx="5" fill="#E8B8AB"/>
+  <rect x="322" y="274" width="124" height="10" rx="5" fill="#E8B8AB"/>
+  <rect x="282" y="336" width="236" height="182" rx="34" fill="#FFF9F6" fill-opacity="0.9"/>
+  <text x="400" y="394" text-anchor="middle" fill="#874A41" font-family="Georgia, serif" font-size="34">PETAL</text>
+  <text x="400" y="438" text-anchor="middle" fill="#874A41" font-family="Arial, sans-serif" font-size="24" letter-spacing="3">CLEAN GEL</text>
+  <text x="400" y="478" text-anchor="middle" fill="#A96D62" font-family="Arial, sans-serif" font-size="16" letter-spacing="2">CAMELLIA DAILY WASH</text>
+  <rect x="288" y="700" width="224" height="92" rx="22" fill="#E9C9BF"/>
+  <rect x="324" y="728" width="152" height="20" rx="10" fill="#D7AAA0"/>
+  <defs>
+    <linearGradient id="tubeBody" x1="248" y1="164" x2="552" y2="724" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE9E0"/>
+      <stop offset="1" stop-color="#E9C6BC"/>
+    </linearGradient>
+  </defs>
+</svg>

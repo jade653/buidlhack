@@ -1,0 +1,16 @@
+<svg width="800" height="960" viewBox="0 0 800 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="960" rx="48" fill="#EAF1F4"/>
+  <ellipse cx="400" cy="812" rx="212" ry="44" fill="#ACC3CE" fill-opacity="0.3"/>
+  <rect x="210" y="446" width="380" height="220" rx="76" fill="url(#jarBody)"/>
+  <rect x="248" y="352" width="304" height="128" rx="42" fill="#D8E7EE"/>
+  <rect x="264" y="380" width="272" height="44" rx="22" fill="#C1D8E2"/>
+  <rect x="260" y="506" width="280" height="118" rx="34" fill="#FCFFFF" fill-opacity="0.92"/>
+  <text x="400" y="548" text-anchor="middle" fill="#4E6973" font-family="Georgia, serif" font-size="31">VELVET BARRIER</text>
+  <text x="400" y="590" text-anchor="middle" fill="#4E6973" font-family="Arial, sans-serif" font-size="22" letter-spacing="3">CERAMIDE CREAM</text>
+  <defs>
+    <linearGradient id="jarBody" x1="210" y1="446" x2="590" y2="666" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FCFF"/>
+      <stop offset="1" stop-color="#D4E4EB"/>
+    </linearGradient>
+  </defs>
+</svg>
