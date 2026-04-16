@@ -1,0 +1,205 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   4.576224200s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint: fingerprint error for agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("agent_challenge_contract", ["cdylib"], "C:\\Users\\shyim\\Documents\\GitHub\\buidlhack\\contract\\src\\lib.rs", Edition2024) }
+   4.578454200s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\agent-challenge-contract-4bedc1cc6e06d631\lib-agent_challenge_contract`
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_libgit2_prerelease
+  12: <unknown>
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: git_midx_writer_dump
+  17: git_filter_source_repo
+  18: git_midx_writer_dump
+  19: BaseThreadInitThunk
+  20: RtlUserThreadStart
+   9.263545800s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint: fingerprint error for agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("agent_challenge_contract", ["cdylib"], "C:\\Users\\shyim\\Documents\\GitHub\\buidlhack\\contract\\src\\lib.rs", Edition2024) }
+   9.264003300s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\agent-challenge-contract-c8b5a15d93970831\test-lib-agent_challenge_contract`
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_libgit2_prerelease
+  12: <unknown>
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: git_midx_writer_dump
+  17: git_filter_source_repo
+  18: git_midx_writer_dump
+  19: BaseThreadInitThunk
+  20: RtlUserThreadStart
+   9.267664500s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="near_workspaces"}: cargo::core::compiler::fingerprint: fingerprint error for near-workspaces v0.15.0/Check { test: false }/TargetInner { ..: lib_target("near_workspaces", ["lib"], "C:\\Users\\shyim\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\near-workspaces-0.15.0\\src\\lib.rs", Edition2018) }
+   9.267709900s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="near_workspaces"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\near-workspaces-9bce02bd38077ff5\lib-near_workspaces`
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_libgit2_prerelease
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: git_midx_writer_dump
+  18: git_filter_source_repo
+  19: git_midx_writer_dump
+  20: BaseThreadInitThunk
+  21: RtlUserThreadStart
+  10.183094000s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for near-workspaces v0.15.0/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "C:\\Users\\shyim\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\near-workspaces-0.15.0\\build.rs", Edition2018) }
+  10.183125600s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\near-workspaces-3243aefd146a65e5\run-build-script-build-script-build`
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_filter_source_repo
+  13: git_filter_source_repo
+  14: git_libgit2_prerelease
+  15: <unknown>
+  16: <unknown>
+  17: <unknown>
+  18: <unknown>
+  19: git_midx_writer_dump
+  20: git_filter_source_repo
+  21: git_midx_writer_dump
+  22: BaseThreadInitThunk
+  23: RtlUserThreadStart
+   Compiling near-workspaces v0.15.0
+    Checking agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)
+error: failed to run custom build command for `near-workspaces v0.15.0`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  process didn't exit successfully: `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\build\near-workspaces-bc81fc74a7f91c87\build-script-build` (exit code: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=NEAR_SANDBOX_BIN_PATH
+
+  --- stderr
+
+  thread 'main' (16500) panicked at C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-workspaces-0.15.0\build.rs:7:39:
+  Could not install sandbox: Unsupported platform: only linux-x86 and darwin-arm are supported
+
+  Stack backtrace:
+     0: std::backtrace_rs::backtrace::win64::trace
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+     1: std::backtrace_rs::backtrace::trace_unsynchronized
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+     2: std::backtrace::Backtrace::create
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\backtrace.rs:331
+     3: std::backtrace::Backtrace::capture
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\backtrace.rs:296
+     4: anyhow::error::<impl anyhow::Error>::msg
+     5: anyhow::__private::format_err
+     6: near_sandbox_utils::install_with_version::{{closure}}
+     7: core::option::Option<T>::ok_or_else
+     8: near_sandbox_utils::install_with_version
+     9: near_sandbox_utils::ensure_sandbox_bin_with_version
+    10: near_sandbox_utils::install
+    11: build_script_build::main
+    12: std::rt::lang_start
+    13: std::rt::lang_start
+    14: std::rt::lang_start
+    15: std::rt::lang_start_internal::closure$0
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\rt.rs:175
+    16: std::panicking::catch_unwind::do_call
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panicking.rs:590
+    17: std::panicking::catch_unwind
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panicking.rs:553
+    18: std::panic::catch_unwind
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panic.rs:359
+    19: std::rt::lang_start_internal
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\rt.rs:171
+    20: std::rt::lang_start
+    21: main
+    22: invoke_main
+               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:78
+    23: __scrt_common_main_seh
+               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:288
+    24: BaseThreadInitThunk
+    25: RtlUserThreadStart
+  stack backtrace:
+     0: std::panicking::panic_handler
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panicking.rs:698
+     1: core::panicking::panic_fmt
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\core\src\panicking.rs:75
+     2: core::result::unwrap_failed
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\core\src\result.rs:1855
+     3: std::rt::lang_start
+     4: build_script_build::main
+     5: std::rt::lang_start
+     6: std::rt::lang_start
+     7: std::rt::lang_start
+     8: std::rt::lang_start_internal::closure$0
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\rt.rs:175
+     9: std::panicking::catch_unwind::do_call
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panicking.rs:590
+    10: std::panicking::catch_unwind
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panicking.rs:553
+    11: std::panic::catch_unwind
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\panic.rs:359
+    12: std::rt::lang_start_internal
+               at /rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library\std\src\rt.rs:171
+    13: std::rt::lang_start
+    14: main
+    15: invoke_main
+               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:78
+    16: __scrt_common_main_seh
+               at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl:288
+    17: BaseThreadInitThunk
+    18: RtlUserThreadStart
+  note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `agent-challenge-contract` (lib) due to 7 previous errors; 8 warnings emitted
