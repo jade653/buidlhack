@@ -11,8 +11,6 @@ crate-type = ["cdylib"]
 near-sdk = "5.21.0"
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4", features = ["alloc"] }
-# shade-attestation lives inside the shade-agent-framework monorepo workspace.
-# Cargo resolves workspace members by crate name from the git URL.
 shade-attestation = { git = "https://github.com/NearDeFi/shade-agent-framework.git" }
 
 [dev-dependencies]

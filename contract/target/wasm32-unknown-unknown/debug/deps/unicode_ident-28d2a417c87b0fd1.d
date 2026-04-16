@@ -1,0 +1,6 @@
+C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\wasm32-unknown-unknown\debug\deps\unicode_ident-28d2a417c87b0fd1.d: C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicode-ident-1.0.24\src\lib.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicode-ident-1.0.24\src\tables.rs
+
+C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\wasm32-unknown-unknown\debug\deps\libunicode_ident-28d2a417c87b0fd1.rmeta: C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicode-ident-1.0.24\src\lib.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicode-ident-1.0.24\src\tables.rs
+
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicode-ident-1.0.24\src\lib.rs:
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicode-ident-1.0.24\src\tables.rs:

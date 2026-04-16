@@ -1,7 +1,4 @@
-// views.rs — Read-only queries for the base Shade Agent state.
-
 use crate::*;
-use near_sdk::near;
 
 #[near(serializers = [json])]
 pub struct ContractInfo {
@@ -20,11 +17,17 @@ impl Contract {
         }
     }
 
-    pub fn get_agent(&self, account_id: AccountId) -> Option<Agent> {
-        self.agents.get(&account_id)
+    // Agent struct is borsh-only, so we expose individual fields rather than the struct.
+    // (borsh types can't be returned as JSON directly without json serializer derive)
+    pub fn get_agent_valid_until(&self, account_id: AccountId) -> Option<u64> {
+        self.agents.get(&account_id).map(|a| a.valid_until_ms)
     }
 
     pub fn get_approved_measurements(&self) -> Vec<FullMeasurementsHex> {
         self.approved_measurements.iter().cloned().collect()
+    }
+
+    pub fn get_whitelisted_agents(&self) -> Vec<AccountId> {
+        self.whitelisted_agents_for_local.iter().cloned().collect()
     }
 }

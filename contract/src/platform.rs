@@ -15,6 +15,7 @@ use near_sdk::{env, near, AccountId, NearToken, Promise};
 // ─────────────────────────────────────────────────────────────────────────────
 
 #[near(serializers = [borsh, json])]
+#[derive(Clone)]
 pub struct Challenge {
     /// The NEAR account that created (and funded) this challenge.
     pub enterprise_id: AccountId,
@@ -30,6 +31,7 @@ pub struct Challenge {
 /// score is stored as basis-points (× 10_000) to avoid f64 in Borsh storage.
 /// 0.87 → 8700 bp.  Range: 0–10_000.
 #[near(serializers = [borsh, json])]
+#[derive(Clone)]
 pub struct ScoreRecord {
     pub score_bp: u32,
     pub submitted_at_ms: u64,
@@ -46,6 +48,7 @@ impl ScoreRecord {
 /// Storing the hash on-chain proves the ciphertext existed at submission time
 /// and hasn't been tampered with. The actual ciphertext stays in the platform DB.
 #[near(serializers = [borsh, json])]
+#[derive(Clone)]
 pub struct LockedOutput {
     pub encrypted_hash: String,
     /// Becomes true after release_bounty is called for this user.
@@ -209,18 +212,22 @@ impl Contract {
         challenge_id: String,
         winner: AccountId,
     ) -> Promise {
-        let mut challenge = self
-            .challenges
-            .get(&challenge_id)
-            .unwrap_or_else(|| env::panic_str("Challenge not found"));
+        // Read the values we need before taking any mutable borrows.
+        // (Rust borrow checker: can't hold &mut self.challenges while also
+        // accessing self.locked_outputs or self.scores.)
+        let (enterprise_id, bounty_yocto, is_finished) = {
+            let c = self
+                .challenges
+                .get(&challenge_id)
+                .unwrap_or_else(|| env::panic_str("Challenge not found"));
+            (c.enterprise_id.clone(), c.bounty_yocto, c.is_finished)
+        };
 
         require!(
-            env::predecessor_account_id() == challenge.enterprise_id,
+            env::predecessor_account_id() == enterprise_id,
             "Only the enterprise that created this challenge can release the bounty"
         );
-        require!(!challenge.is_finished, "Bounty already released");
-
-        let bounty_yocto = challenge.bounty_yocto;
+        require!(!is_finished, "Bounty already released");
         require!(bounty_yocto > 0, "No bounty to release");
 
         // Verify the winner has a score on-chain (they actually submitted)
@@ -230,20 +237,21 @@ impl Contract {
             "Winner has no score on-chain for this challenge"
         );
 
-        // Unlock the winner's output so the platform can deliver ciphertext + key
-        if let Some(mut output) = self.locked_outputs.get(&key) {
+        // Unlock the winner's output so the platform can deliver ciphertext + key.
+        // get_mut() gives us a direct mutable reference — no need to re-insert.
+        if let Some(output) = self.locked_outputs.get_mut(&key) {
             output.unlocked = true;
-            self.locked_outputs.insert(key, output);
         }
 
         // Mark challenge finished
-        challenge.is_finished = true;
-        challenge.winner = Some(winner.clone());
-        self.challenges.insert(challenge_id.clone(), challenge);
+        {
+            let c = self.challenges.get_mut(&challenge_id).unwrap();
+            c.is_finished = true;
+            c.winner = Some(winner.clone());
+        }
 
         near_sdk::log!("EVENT:bounty_released:{}:{}", challenge_id, winner);
 
-        // Transfer bounty — Promise resolves asynchronously on NEAR
         Promise::new(winner).transfer(NearToken::from_yoctonear(bounty_yocto))
     }
 
@@ -252,7 +260,7 @@ impl Contract {
     // ─────────────────────────────────────────────────────────────────────────
 
     pub fn get_challenge(&self, challenge_id: String) -> Option<Challenge> {
-        self.challenges.get(&challenge_id)
+        self.challenges.get(&challenge_id).cloned()
     }
 
     /// Returns the top `limit` scores for a challenge, sorted best-first.
@@ -287,7 +295,7 @@ impl Contract {
         challenge_id: String,
         user: AccountId,
     ) -> Option<ScoreRecord> {
-        self.scores.get(&score_key(&challenge_id, &user))
+        self.scores.get(&score_key(&challenge_id, &user)).cloned()
     }
 
     /// Returns the locked output for (challenge, user).
@@ -297,7 +305,7 @@ impl Contract {
         challenge_id: String,
         user: AccountId,
     ) -> Option<LockedOutput> {
-        self.locked_outputs.get(&score_key(&challenge_id, &user))
+        self.locked_outputs.get(&score_key(&challenge_id, &user)).cloned()
     }
 }
 

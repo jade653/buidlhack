@@ -1,0 +1,11 @@
+C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\deps\opentelemetry_otlp-0f995d7283f53fb2.d: C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\lib.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\mod.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\tonic\mod.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\tonic\trace.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\span.rs
+
+C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\deps\libopentelemetry_otlp-0f995d7283f53fb2.rmeta: C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\lib.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\mod.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\tonic\mod.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\tonic\trace.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\span.rs
+
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\lib.rs:
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\mod.rs:
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\tonic\mod.rs:
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\exporter\tonic\trace.rs:
+C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\opentelemetry-otlp-0.30.0\src\span.rs:
+
+# env-dep:CARGO_PKG_VERSION=0.30.0

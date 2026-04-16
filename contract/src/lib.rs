@@ -1,44 +1,54 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Base Shade Agent contract (derived from shade-contract-template).
-// If building inside the shade-agent-framework monorepo, replace this file
-// with the template's lib.rs and only apply the "PLATFORM ADDITIONS" block.
-// ─────────────────────────────────────────────────────────────────────────────
-
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{IterableMap, IterableSet};
-use near_sdk::store::UnorderedMap;
+use hex;
 use near_sdk::{
-    env, near, require, AccountId, BorshStorageKey, NearToken, PanicOnDefault, Promise,
+    AccountId, BorshStorageKey, Gas, NearToken, PanicOnDefault, Promise,
+    env::{self, block_timestamp_ms},
+    json_types::U64,
+    log, near, require,
+    serde::Serialize,
+    serde_json,
+    store::{IterableMap, IterableSet},
 };
-use shade_attestation::{DstackAttestation, DstackAttestationForContract, FullMeasurementsHex, Ppid};
+use shade_attestation::{
+    attestation::DstackAttestation,
+    measurements::{FullMeasurements, FullMeasurementsHex, create_mock_full_measurements_hex},
+    report_data::ReportData,
+    tcb_info::HexBytes,
+};
 
+pub use internal::events::Event;
+pub use internal::helpers::AgentRemovalReason;
+pub use views::ContractInfo;
+
+pub mod internal;
 pub mod owner;
 pub mod platform;
 pub mod views;
 
 pub use platform::{Challenge, LockedOutput, ScoreRecord};
 
+/// Phala's platform identifier — 16-byte hex value.
+pub type Ppid = HexBytes<16>;
+
 // ── Storage keys ──────────────────────────────────────────────────────────────
 
-#[derive(BorshSerialize, BorshDeserialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 pub enum StorageKey {
     // Base Shade Agent keys
     ApprovedMeasurements,
     ApprovedPpids,
     Agents,
     WhitelistedAgentsForLocal,
-    // ── PLATFORM ADDITIONS ────────────────────────────────────────────────────
+    // Platform additions
     Challenges,
-    /// composite key per score: "{challenge_id}::{user_id}"
     Scores,
-    /// composite key per output: "{challenge_id}::{user_id}"
     LockedOutputs,
 }
 
 // ── Agent record ──────────────────────────────────────────────────────────────
 
-#[near(serializers = [borsh, json])]
+#[near(serializers = [borsh])]
+#[derive(Clone)]
 pub struct Agent {
     pub measurements: FullMeasurementsHex,
     pub ppid: Ppid,
@@ -50,7 +60,7 @@ pub struct Agent {
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct Contract {
-    // ── Base Shade Agent fields ────────────────────────────────────────────────
+    // Base Shade Agent fields
     pub requires_tee: bool,
     pub attestation_expiration_time_ms: u64,
     pub owner_id: AccountId,
@@ -60,31 +70,36 @@ pub struct Contract {
     pub agents: IterableMap<AccountId, Agent>,
     pub whitelisted_agents_for_local: IterableSet<AccountId>,
 
-    // ── PLATFORM ADDITIONS ────────────────────────────────────────────────────
-    pub challenges: UnorderedMap<String, Challenge>,
-    pub scores: UnorderedMap<String, ScoreRecord>,
-    pub locked_outputs: UnorderedMap<String, LockedOutput>,
+    // Platform additions
+    pub challenges: IterableMap<String, Challenge>,
+    pub scores: IterableMap<String, ScoreRecord>,
+    pub locked_outputs: IterableMap<String, LockedOutput>,
 }
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 
+const STORAGE_BYTES_TO_REGISTER: u128 = 486;
+
 #[near]
 impl Contract {
-    /// Deploy with:
-    ///   near contract deploy ... call-function as-transaction new \
-    ///     json-args '{"owner_id":"you.testnet","mpc_contract_id":"mpc.testnet","requires_tee":false}' ...
+    /// Initialize the contract.
+    ///
+    /// Example (testnet, local dev mode):
+    ///   near contract deploy CONTRACT.testnet use-file res/contract.wasm \
+    ///     with-init-call new json-args \
+    ///     '{"requires_tee":false,"attestation_expiration_time_ms":"86400000",
+    ///       "owner_id":"YOU.testnet","mpc_contract_id":"v1.signer-prod.testnet"}' \
+    ///     prepaid-gas '100 Tgas' attached-deposit '0 NEAR'
     #[init]
     pub fn new(
+        requires_tee: bool,
+        attestation_expiration_time_ms: U64,
         owner_id: AccountId,
         mpc_contract_id: AccountId,
-        requires_tee: bool,
-        attestation_expiration_time_ms: Option<u64>,
     ) -> Self {
-        // Default: attestation is valid for 24 hours
-        let expiry_ms = attestation_expiration_time_ms.unwrap_or(24 * 60 * 60 * 1_000);
         Self {
             requires_tee,
-            attestation_expiration_time_ms: expiry_ms,
+            attestation_expiration_time_ms: attestation_expiration_time_ms.into(),
             owner_id,
             mpc_contract_id,
             approved_measurements: IterableSet::new(StorageKey::ApprovedMeasurements),
@@ -93,110 +108,72 @@ impl Contract {
             whitelisted_agents_for_local: IterableSet::new(
                 StorageKey::WhitelistedAgentsForLocal,
             ),
-            challenges: UnorderedMap::new(StorageKey::Challenges),
-            scores: UnorderedMap::new(StorageKey::Scores),
-            locked_outputs: UnorderedMap::new(StorageKey::LockedOutputs),
+            challenges: IterableMap::new(StorageKey::Challenges),
+            scores: IterableMap::new(StorageKey::Scores),
+            locked_outputs: IterableMap::new(StorageKey::LockedOutputs),
         }
     }
 
-    // ── Agent registration (Shade Agent base) ─────────────────────────────────
+    // ── Agent registration ────────────────────────────────────────────────────
 
     /// Called by the TEE agent on boot via ShadeClient.register().
-    /// In TEE mode: verifies Dstack attestation against approved measurements.
-    /// In local mode: checks the whitelist (for dev/testing only).
     #[payable]
-    pub fn register_agent(&mut self, attestation: DstackAttestationForContract) -> bool {
-        let agent_id = env::predecessor_account_id();
+    pub fn register_agent(&mut self, attestation: DstackAttestation) -> bool {
+        let predecessor = env::predecessor_account_id();
+        let already_registered = self.agents.get(&predecessor).is_some();
 
-        if self.requires_tee {
-            // Verify against approved measurements and PPIDs
-            let verified = attestation
-                .verify(
-                    agent_id.as_str(),
-                    &self.approved_measurements,
-                    &self.approved_ppids,
-                )
-                .expect("TEE attestation verification failed");
-
-            // Require sufficient deposit to cover storage for the Agent record
+        if !already_registered {
             let storage_cost = env::storage_byte_cost()
-                .as_yoctonear()
-                .saturating_mul(512);
-            let existing = self.agents.contains_key(&agent_id);
-            if !existing {
-                require!(
-                    env::attached_deposit().as_yoctonear() >= storage_cost,
-                    "Attached deposit must cover storage cost"
-                );
-            }
-
-            let valid_until_ms =
-                env::block_timestamp_ms() + self.attestation_expiration_time_ms;
-
-            self.agents.insert(
-                agent_id.clone(),
-                Agent {
-                    measurements: verified.measurements,
-                    ppid: verified.ppid,
-                    valid_until_ms,
-                },
-            );
-
-            near_sdk::log!(
-                "EVENT:agent_registered:{}:valid_until:{}",
-                agent_id,
-                valid_until_ms
-            );
-        } else {
+                .checked_mul(STORAGE_BYTES_TO_REGISTER)
+                .unwrap();
             require!(
-                !self.requires_tee,
-                "TEE mode is enabled; local whitelist registration is disabled"
-            );
-            require!(
-                self.whitelisted_agents_for_local.contains(&agent_id),
-                "Agent not whitelisted for local mode"
+                env::attached_deposit() >= storage_cost,
+                &format!(
+                    "Attached deposit must be >= storage cost {:?}",
+                    storage_cost.exact_amount_display()
+                )
             );
         }
+
+        let (measurements, ppid) = self.verify_attestation(attestation);
+        let valid_until_ms = block_timestamp_ms() + self.attestation_expiration_time_ms;
+
+        Event::AgentRegistered {
+            account_id: &predecessor,
+            measurements: &measurements,
+            ppid: &ppid,
+            current_time_ms: U64::from(block_timestamp_ms()),
+            valid_until_ms: U64::from(valid_until_ms),
+        }
+        .emit();
+
+        self.agents.insert(
+            predecessor,
+            Agent {
+                measurements,
+                ppid,
+                valid_until_ms,
+            },
+        );
 
         true
     }
 
-    // ── Internal helper: gate functions to verified TEE agents ────────────────
-
-    /// Returns Some(panic_promise) if the caller is NOT a valid registered agent.
-    /// Pattern from shade-contract-template — used by TEE-gated functions.
-    pub(crate) fn require_valid_agent(&self) -> Option<()> {
-        let caller = env::predecessor_account_id();
-
-        if self.requires_tee {
-            match self.agents.get(&caller) {
-                None => {
-                    env::panic_str("Caller is not a registered TEE agent");
-                }
-                Some(agent) => {
-                    if agent.valid_until_ms < env::block_timestamp_ms() {
-                        env::panic_str("Agent attestation has expired; re-register");
-                    }
-                }
-            }
-        } else {
-            if !self.whitelisted_agents_for_local.contains(&caller) {
-                env::panic_str("Caller is not whitelisted for local mode");
-            }
-        }
-
-        None
+    /// Called by require_valid_agent cross-contract call when an agent is invalid.
+    #[private]
+    pub fn fail_on_invalid_agent(reasons: Vec<AgentRemovalReason>) {
+        env::panic_str(&format!("Invalid agent: {:?}", reasons));
     }
 
-    /// Convenience: checks whether a given account is a valid registered agent.
+    /// View: check if a given account is a currently-valid registered agent.
     pub fn is_valid_agent(&self, account_id: AccountId) -> bool {
-        if self.requires_tee {
-            match self.agents.get(&account_id) {
-                None => false,
-                Some(agent) => agent.valid_until_ms >= env::block_timestamp_ms(),
+        match self.agents.get(&account_id) {
+            None => false,
+            Some(agent) => {
+                agent.valid_until_ms >= block_timestamp_ms()
+                    && self.approved_measurements.contains(&agent.measurements)
+                    && self.approved_ppids.contains(&agent.ppid)
             }
-        } else {
-            self.whitelisted_agents_for_local.contains(&account_id)
         }
     }
 }
