@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- saucer shadow -->
+  <ellipse cx="120" cy="192" rx="64" ry="8" fill="#3B2314" opacity="0.1"/>
+
+  <!-- saucer -->
+  <ellipse cx="120" cy="188" rx="62" ry="9" fill="#C07A5A"/>
+  <ellipse cx="120" cy="184" rx="52" ry="7" fill="#A0623E"/>
+
+  <!-- cup body (wide latte style) -->
+  <path d="M74 134 L80 178 Q120 188 160 178 L166 134 Z" fill="#3B2314"/>
+
+  <!-- cup rim -->
+  <ellipse cx="120" cy="134" rx="46" ry="10" fill="#C07A5A"/>
+
+  <!-- milk foam surface -->
+  <ellipse cx="120" cy="134" rx="40" ry="8.5" fill="#F0E6D8"/>
+
+  <!-- latte art: simple tulip/leaf -->
+  <ellipse cx="120" cy="134" rx="14" ry="5" fill="#C07A5A" opacity="0.45"/>
+  <ellipse cx="120" cy="128" rx="9" ry="4" fill="#C07A5A" opacity="0.35"/>
+  <ellipse cx="120" cy="123" rx="6" ry="3" fill="#C07A5A" opacity="0.28"/>
+  <!-- center line -->
+  <path d="M120 140 Q120 126 120 118" stroke="#C07A5A" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- handle -->
+  <path d="M166 148 C188 144 190 176 166 172" stroke="#C07A5A" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- steam (subtle, latte is not as hot) -->
+  <path d="M108 118 C105 110 109 102 106 94" stroke="#C07A5A" stroke-width="2" stroke-linecap="round" opacity="0.38"/>
+  <path d="M132 118 C129 110 133 102 130 94" stroke="#C07A5A" stroke-width="2" stroke-linecap="round" opacity="0.38"/>
+</svg>

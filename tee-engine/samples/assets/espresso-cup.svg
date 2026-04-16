@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- steam -->
+  <path d="M100 96 C96 86 101 76 97 66" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M120 90 C116 78 121 66 117 54" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M140 96 C136 86 141 76 137 66" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- saucer -->
+  <ellipse cx="120" cy="176" rx="56" ry="9" fill="#C07A5A"/>
+  <ellipse cx="120" cy="172" rx="46" ry="7" fill="#A0623E"/>
+
+  <!-- cup body -->
+  <path d="M88 118 L94 166 Q120 174 146 166 L152 118 Z" fill="#3B2314"/>
+
+  <!-- cup rim -->
+  <ellipse cx="120" cy="118" rx="32" ry="8" fill="#C07A5A"/>
+
+  <!-- coffee surface -->
+  <ellipse cx="120" cy="118" rx="26" ry="6" fill="#1C0D06"/>
+  <ellipse cx="120" cy="118" rx="22" ry="4.5" fill="none" stroke="#8B5E3C" stroke-width="2" opacity="0.5"/>
+
+  <!-- handle -->
+  <path d="M152 130 C174 126 174 162 152 158" stroke="#C07A5A" stroke-width="7" stroke-linecap="round"/>
+</svg>

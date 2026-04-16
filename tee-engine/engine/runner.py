@@ -184,15 +184,15 @@ def _run_in_thread(
 
 def _extract_result(
     sandbox_globals: Dict[str, Any],
-) -> tuple[Any, Optional[float]]:
+) -> Any:
     """
-    Extract output and score from the sandbox namespace after exec.
+    Extract output from the sandbox namespace after exec.
 
     Supports two harness patterns:
-      - Pattern A: harness sets module-level `result = {"output": ..., "score": ...}`
-      - Pattern B: harness defines `def run(): return {"output": ..., "score": ...}`
+      - Pattern A: harness sets module-level `result = {"output": ...}`
+      - Pattern B: harness defines `def run(): return {"output": ...}`
 
-    Returns (output, score). Score may be None if the harness didn't provide one.
+    Returns output value.
     """
     result_val = sandbox_globals.get("result")
 
@@ -205,7 +205,7 @@ def _extract_result(
     if result_val is None:
         raise ValueError(
             "harness.py did not set a `result` variable and did not define a "
-            "`run()` function. Set `result = {'output': ..., 'score': ...}` "
+            "`run()` function. Set `result = {'output': ...}` "
             "at the end of your harness."
         )
 
@@ -214,17 +214,7 @@ def _extract_result(
             f"harness.py `result` must be a dict, got {type(result_val).__name__}."
         )
 
-    output = result_val.get("output")
-    raw_score = result_val.get("score")
-
-    score: Optional[float] = None
-    if raw_score is not None:
-        try:
-            score = float(raw_score)
-        except (TypeError, ValueError):
-            score = None  # non-numeric score is treated as absent
-
-    return output, score
+    return result_val.get("output")
 
 
 def _get_printed_output(sandbox_globals: Dict[str, Any]) -> str:
@@ -390,7 +380,7 @@ def run_submission(
 
     # -- Step 6: Extract result ------------------------------------------
     try:
-        output, score = _extract_result(final_globals)
+        output = _extract_result(final_globals)
     except (ValueError, TypeError) as exc:
         return ExecutionResult(
             status="error",
@@ -406,7 +396,6 @@ def run_submission(
     return ExecutionResult(
         status="success",
         output=output,
-        score=score,
         wall_time_sec=wall_time,
         token_usage=tracker.to_dict(),
         metadata={

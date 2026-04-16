@@ -391,6 +391,10 @@ def build_sandbox_globals(
         # Sequence unpack:   a, b = it → _unpack_sequence_(it, ...)
         "_unpack_sequence_": guarded_unpack_sequence,
 
+        # Iter unpack:  for a, b in it → _iter_unpack_sequence_(it, ...)
+        # Used by RestrictedPython in generator expressions and for-loop targets.
+        "_iter_unpack_sequence_": guarded_unpack_sequence,
+
         # Print:             print(x) → _print._call_print(x)
         # RestrictedPython generates: _print = _print_(_getattr_) at exec start.
         # After exec, call sandbox_globals["_print"]() to get captured text.

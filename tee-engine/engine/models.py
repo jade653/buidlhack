@@ -52,7 +52,6 @@ class ExecutionResult:
     Fields:
         status:        "success" | "error" | "timeout"
         output:        The value of result["output"] from harness.py
-        score:         The value of result["score"] from harness.py (0.0–1.0 typical)
         wall_time_sec: Total wall-clock seconds from exec start to finish
         token_usage:   Token usage dict from TokenTracker.to_dict()
         error:         Human-readable error string (None on success)
@@ -61,7 +60,6 @@ class ExecutionResult:
 
     status: Literal["success", "error", "timeout"]
     output: Any = None
-    score: Optional[float] = None
     wall_time_sec: float = 0.0
     token_usage: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
