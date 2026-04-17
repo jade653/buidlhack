@@ -103,7 +103,7 @@ export default function SubmitPage() {
   const [baseGuide, setBaseGuide] = useState(challengeGuide);
   const [submissionSource, setSubmissionSource] =
     useState<SubmissionSource>("github");
-  const [githubRepo, setGithubRepo] = useState("9oodam/agent-set-1");
+  const [githubRepo, setGithubRepo] = useState("9oodam/agent-sets");
   const [githubRef, setGithubRef] = useState("main");
   const [githubPackagePath, setGithubPackagePath] = useState("/");
   const [monitorSummary, setMonitorSummary] = useState<string | null>(null);
@@ -362,17 +362,42 @@ export default function SubmitPage() {
   };
 
   const totalTokens = runResult?.token_usage?.total_tokens ?? 0;
-  const finalScore = runResult?.score ? Math.round(runResult.score * 10) / 10 : 0;
-  const criterionScores = (challenge?.evaluationCriteria ?? []).map((item, index) => {
-    const base = finalScore;
-    const weightBoost = typeof item.weight === "number" ? item.weight / 15 : 3;
-    const variance = ((index % 4) - 1.5) * 2.2;
-    const value = Math.max(
-      35,
-      Math.min(99, base * 0.8 + weightBoost + variance),
-    );
-    return { ...item, value };
-  });
+  const finalScore = runResult?.score
+    ? Math.round(runResult.score * 10) / 10
+    : 0;
+  const evaluationMeta =
+    runResult?.metadata &&
+    typeof runResult.metadata.evaluation === "object" &&
+    runResult.metadata.evaluation !== null
+      ? (runResult.metadata.evaluation as Record<string, unknown>)
+      : null;
+  const criteriaBreakdown = Array.isArray(evaluationMeta?.criteria_breakdown)
+    ? evaluationMeta.criteria_breakdown
+    : [];
+  const criterionScoreByKey = criteriaBreakdown.reduce<Record<string, number>>(
+    (acc, item) => {
+      if (!item || typeof item !== "object") return acc;
+      const row = item as Record<string, unknown>;
+      const key = typeof row.key === "string" ? row.key : null;
+      const rawScore = row.score;
+      const numericScore =
+        typeof rawScore === "number"
+          ? rawScore
+          : typeof rawScore === "string"
+            ? Number(rawScore)
+            : NaN;
+      if (!key || !Number.isFinite(numericScore)) return acc;
+      acc[key] = Math.max(0, Math.min(100, numericScore));
+      return acc;
+    },
+    {},
+  );
+  const criterionScores = (challenge?.evaluationCriteria ?? []).map(
+    (item) => {
+      const value = criterionScoreByKey[item.key] ?? 0;
+      return { ...item, value };
+    },
+  );
   const outputPreview =
     typeof runResult?.output === "string"
       ? runResult.output.slice(0, 1200)

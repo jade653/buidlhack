@@ -150,6 +150,21 @@ create table if not exists public.leaderboard_entries (
   primary key (challenge_id, submission_id)
 );
 
+create table if not exists public.submission_criterion_scores (
+  submission_id uuid not null references public.submissions(id) on delete cascade,
+  challenge_id text not null,
+  criterion_key text not null,
+  score double precision not null check (score >= 0 and score <= 100),
+  weight double precision,
+  reason text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (submission_id, criterion_key)
+);
+
+create index if not exists submission_criterion_scores_challenge_submission_idx
+  on public.submission_criterion_scores (challenge_id, submission_id);
+
 create or replace function public.recompute_leaderboard(target_challenge_id text)
 returns void
 language plpgsql

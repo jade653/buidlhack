@@ -53,6 +53,21 @@ const getAgentRadarScores = (
   });
 };
 
+const getCriterionRadarScores = (
+  criterionScores: Record<string, number>,
+  criteria: EvaluationCriterion[],
+  fallbackAgent: AgentSlot,
+) => {
+  const fallbackValues = getAgentRadarScores(fallbackAgent, criteria);
+  return criteria.map((criterion, index) => {
+    const raw = criterionScores[criterion.key];
+    if (typeof raw !== "number" || Number.isNaN(raw)) {
+      return fallbackValues[index] ?? 0;
+    }
+    return toRange(raw / 100, 0, 1);
+  });
+};
+
 type ApiLeaderboardRow = {
   rank: number;
   submission_id: string;
@@ -62,6 +77,7 @@ type ApiLeaderboardRow = {
   score: number | null;
   wall_time_sec: number;
   total_tokens: number;
+  criterion_scores: Record<string, number>;
 };
 
 type BoardParticipant = {
@@ -74,6 +90,7 @@ type BoardParticipant = {
   wallTimeSec: number;
   totalTokens: number;
   finalScore: number;
+  criterionScores: Record<string, number>;
 };
 
 function RunModeBadge({ mode }: { mode: "manual" | "autonomous" }) {
@@ -190,6 +207,7 @@ export default function ChallengeDetailPage() {
           wallTimeSec: row.wall_time_sec,
           totalTokens: row.total_tokens,
           finalScore: quality,
+          criterionScores: row.criterion_scores ?? {},
         };
       });
     }
@@ -208,6 +226,7 @@ export default function ChallengeDetailPage() {
         wallTimeSec,
         totalTokens,
         finalScore: agent.score,
+        criterionScores: {},
       };
     });
   }, [agents, liveRows]);
@@ -232,7 +251,11 @@ export default function ChallengeDetailPage() {
       return {
         id: participant.key,
         label: `${getRankEmoji(participant.rank)} ${participant.displayName}`,
-        values: getAgentRadarScores(slot, evaluationCriteria),
+        values: getCriterionRadarScores(
+          participant.criterionScores,
+          evaluationCriteria,
+          slot,
+        ),
         color: RADAR_COLORS[index % RADAR_COLORS.length],
       };
     });
