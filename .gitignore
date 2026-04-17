@@ -23,6 +23,15 @@ env/
 # Node
 node_modules/
 
+# Rust build artifacts
+target/
+**/target/
+
+# NEAR / wasm-opt downloaded binaries
+contract/binaryen-version_*/
+contract/*.tar.gz
+contract/*.wasm
+
 # IDE
 .vscode/
 .idea/

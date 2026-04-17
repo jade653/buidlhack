@@ -54,10 +54,13 @@ TODO (production): replace with a proper vector retrieval pipeline.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import threading
 import traceback
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -72,6 +75,99 @@ from .sandbox import (
 from .tracker import TokenTracker
 
 DEFAULT_TIMEOUT_SEC = 300
+DEFAULT_AGENT_URL = "http://localhost:3000"
+
+
+# ---------------------------------------------------------------------------
+# On-chain submission helpers
+# ---------------------------------------------------------------------------
+
+def _post_json(url: str, payload: dict, secret: str) -> dict:
+    """HTTP POST with JSON body. Uses stdlib only (no requests dependency)."""
+    data = json.dumps(payload).encode()
+    req = urllib.request.Request(
+        url,
+        data=data,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "x-internal-secret": secret,
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")
+        raise RuntimeError(f"HTTP {exc.code} from {url}: {body}") from exc
+
+
+def submit_to_chain(
+    result: "ExecutionResult",
+    *,
+    challenge_id: str,
+    user: str,
+    agent_url: str = DEFAULT_AGENT_URL,
+    internal_secret: str = "",
+    lock_output: bool = True,
+) -> Dict[str, Any]:
+    """
+    After a successful run, record the score (and optionally lock the output)
+    on-chain via the TypeScript Shade Agent's HTTP API.
+
+    Args:
+        result:          ExecutionResult returned by run_submission().
+        challenge_id:    NEAR contract challenge ID (e.g. "hack-001").
+        user:            NEAR account ID of the participant.
+        agent_url:       Base URL of the TypeScript agent (default localhost:3000).
+        internal_secret: Value of INTERNAL_SECRET env var shared with the agent.
+        lock_output:     If True, also call /api/lock-output with a SHA-256 hash
+                         of the serialised output.
+
+    Returns:
+        Dict with "submit_score" and (optionally) "lock_output" response bodies.
+
+    Raises:
+        ValueError:   If result.status != "success" or score is None.
+        RuntimeError: On HTTP error from the TypeScript agent.
+    """
+    if result.status != "success":
+        raise ValueError(
+            f"Cannot submit non-successful result to chain (status={result.status!r})"
+        )
+    if result.score is None:
+        raise ValueError("result.score is None — cannot submit to chain")
+
+    responses: Dict[str, Any] = {}
+
+    # -- submit_score --------------------------------------------------------
+    score_resp = _post_json(
+        f"{agent_url.rstrip('/')}/api/submit-score",
+        {"challenge_id": challenge_id, "user": user, "score": result.score},
+        internal_secret,
+    )
+    responses["submit_score"] = score_resp
+
+    # -- lock_output ---------------------------------------------------------
+    if lock_output:
+        # SHA-256 of the JSON-serialised output — proves content existed at
+        # submission time.  (Real TEE setup would encrypt with a derived key
+        # and store only the hash here; plaintext stays in the platform DB.)
+        output_bytes = json.dumps(result.output, default=str, sort_keys=True).encode()
+        encrypted_hash = hashlib.sha256(output_bytes).hexdigest()
+
+        output_resp = _post_json(
+            f"{agent_url.rstrip('/')}/api/lock-output",
+            {
+                "challenge_id": challenge_id,
+                "user": user,
+                "encrypted_hash": encrypted_hash,
+            },
+            internal_secret,
+        )
+        responses["lock_output"] = output_resp
+
+    return responses
 
 
 # ---------------------------------------------------------------------------
@@ -465,26 +561,42 @@ def run_submission(
     mock_responses: Optional[List[str]] = None,
     api_key: Optional[str] = None,
     base_url: Optional[str] = None,
+    # On-chain submission (optional). When challenge_id and user are provided,
+    # a successful run automatically calls the TypeScript Shade Agent to
+    # submit_score (and lock_output) on-chain.
+    challenge_id: Optional[str] = None,
+    user: Optional[str] = None,
+    agent_url: str = DEFAULT_AGENT_URL,
+    internal_secret: Optional[str] = None,
+    lock_output_on_chain: bool = True,
 ) -> ExecutionResult:
     """
     Load and execute a user submission against a challenge input.
 
     Args:
-        submission_dir:   Path to the submission directory containing
-                          harness.py, agent.md, and optionally config.json
-                          and rag/documents/.
-        challenge_input:  Dict of challenge data injected as `challenge_input`
-                          in harness.py.
-        timeout_sec:      Max wall-clock seconds (default 300).
-        use_mock_client:  If True, use MockNearAIClient (no real API needed).
-                          Automatically set to True if NEAR_AI_API_KEY is unset.
-        mock_responses:   List of response strings for MockNearAIClient.
-        api_key:          Override NEAR_AI_API_KEY env var.
-        base_url:         Override default Near AI Cloud base URL.
+        submission_dir:       Path to the submission directory containing
+                              harness.py, agent.md, and optionally config.json
+                              and rag/documents/.
+        challenge_input:      Dict of challenge data injected as `challenge_input`
+                              in harness.py.
+        timeout_sec:          Max wall-clock seconds (default 300).
+        use_mock_client:      If True, use MockNearAIClient (no real API needed).
+                              Automatically set to True if NEAR_AI_API_KEY is unset.
+        mock_responses:       List of response strings for MockNearAIClient.
+        api_key:              Override NEAR_AI_API_KEY env var.
+        base_url:             Override default Near AI Cloud base URL.
+        challenge_id:         NEAR challenge ID. If set (with user), on-chain
+                              submission is triggered automatically on success.
+        user:                 NEAR account ID of the participant.
+        agent_url:            TypeScript agent base URL (default localhost:3000).
+        internal_secret:      Shared secret for the TypeScript agent. Falls back
+                              to the INTERNAL_SECRET env var.
+        lock_output_on_chain: Also call /api/lock-output after submit_score.
 
     Returns:
         ExecutionResult with status, output, score, wall_time_sec,
-        token_usage, error, and metadata.
+        token_usage, error, and metadata. On success with chain params set,
+        metadata["chain"] contains the TypeScript agent response(s).
     """
     submission_dir = Path(submission_dir)
 
@@ -626,7 +738,7 @@ def run_submission(
     if final_score is None:
         final_score = _normalize_criterion_score(harness_score)
 
-    return ExecutionResult(
+    exec_result = ExecutionResult(
         status="success",
         output=output,
         score=final_score,
@@ -640,3 +752,21 @@ def run_submission(
             "harness_score_legacy": harness_score,
         },
     )
+
+    # -- Step 7: Submit to chain (if challenge_id + user provided) -----------
+    if challenge_id and user and final_score is not None:
+        secret = internal_secret if internal_secret is not None else os.environ.get("INTERNAL_SECRET", "")
+        try:
+            chain_responses = submit_to_chain(
+                exec_result,
+                challenge_id=challenge_id,
+                user=user,
+                agent_url=agent_url,
+                internal_secret=secret,
+                lock_output=lock_output_on_chain,
+            )
+            exec_result.metadata["chain"] = chain_responses
+        except Exception as exc:  # noqa: BLE001
+            exec_result.metadata["chain_error"] = str(exc)
+
+    return exec_result
