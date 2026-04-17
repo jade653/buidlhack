@@ -392,12 +392,10 @@ export default function SubmitPage() {
     },
     {},
   );
-  const criterionScores = (challenge?.evaluationCriteria ?? []).map(
-    (item) => {
-      const value = criterionScoreByKey[item.key] ?? 0;
-      return { ...item, value };
-    },
-  );
+  const criterionScores = (challenge?.evaluationCriteria ?? []).map((item) => {
+    const value = criterionScoreByKey[item.key] ?? 0;
+    return { ...item, value };
+  });
   const outputPreview =
     typeof runResult?.output === "string"
       ? runResult.output.slice(0, 1200)
@@ -421,7 +419,7 @@ export default function SubmitPage() {
     return (
       <div className="pt-24 max-w-7xl mx-auto px-6 pb-16">
         <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-2">
-          챌린지 데이터를 불러오는 중이거나, 챌린지를 찾을 수 없습니다.
+          Loading challenge data...
         </div>
       </div>
     );

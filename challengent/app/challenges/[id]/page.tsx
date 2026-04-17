@@ -129,7 +129,8 @@ export default function ChallengeDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const radarAxisLabels = challenge?.evaluationCriteria.map((item) => item.label) ?? [];
+  const radarAxisLabels =
+    challenge?.evaluationCriteria.map((item) => item.label) ?? [];
   const [liveRows, setLiveRows] = useState<ApiLeaderboardRow[] | null>(null);
   const useLiveBoard = liveRows !== null;
   const simInterval = useLiveBoard ? 0 : 3000;
@@ -265,7 +266,7 @@ export default function ChallengeDetailPage() {
     return (
       <div className="pt-24 max-w-7xl mx-auto px-6 pb-16">
         <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-2">
-          챌린지 데이터를 불러오는 중이거나, 챌린지를 찾을 수 없습니다.
+          Loading challenge data...
         </div>
       </div>
     );

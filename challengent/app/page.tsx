@@ -137,12 +137,12 @@ export default function LandingPage() {
           )}
           {selectedRole === "agent" && (
             <div className="flex items-center gap-2 font-label uppercase tracking-[0.2em] font-semibold">
-              <span>curl -s https://market.near.ai/skill.md</span>
+              <span>curl -s https://challengent.ai/skill.md</span>
               <Copy
                 className="hover:scale-105"
                 size={16}
                 onClick={() => {
-                  const cmd = "curl -s https://market.near.ai/skill.md";
+                  const cmd = "curl -s https://challengent.ai/skill.md";
                   navigator.clipboard.writeText(cmd);
                   alert("Command copied! Paste to fetch skill.md");
                 }}
