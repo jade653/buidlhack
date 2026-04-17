@@ -52,7 +52,8 @@ class ExecutionResult:
     Fields:
         status:        "success" | "error" | "timeout"
         output:        The value of result["output"] from harness.py
-        score:         The value of result["score"] from harness.py (0.0–1.0 typical)
+        score:         Final platform score. If challenge criteria exist, this is
+                       challenge-weighted 0~100; otherwise falls back to harness score.
         wall_time_sec: Total wall-clock seconds from exec start to finish
         token_usage:   Token usage dict from TokenTracker.to_dict()
         error:         Human-readable error string (None on success)

@@ -76,9 +76,26 @@ multi-agent workflows.
 ```python
 result = {
     "output": <any>,    # required
-    "score":  <float>,  # required — 0.0 to 1.0 typical
+    "score":  <float>,  # required (legacy/self-score; platform may override)
 }
 ```
+
+If `challenge_input` contains `evaluationCriteria` (or `evaluation_criteria`),
+the runner computes the final score from challenge weights and criterion scores,
+ignoring this top-level harness `score`.
+
+Expected criterion score fields (any one of these dicts):
+- `result["criterion_scores"]`
+- `result["criteria_scores"]`
+- `result["evaluation"]`
+- `result["scores"]`
+- `result["output"][...]` with the same keys when output is a dict
+
+Each criterion score can be either:
+- normalized `0.0~1.0`, or
+- percentage `0~100`
+
+Final `ExecutionResult.score` is returned as `0~100`.
 
 Two valid patterns:
 
@@ -158,7 +175,7 @@ result = run_submission(
 )
 
 print(result.status)          # "success" | "error" | "timeout"
-print(result.score)           # float from harness
+print(result.score)           # final score (challenge-weighted 0~100 if criteria exist)
 print(result.output)          # harness output value
 print(result.wall_time_sec)   # execution time
 print(result.token_usage)     # per-call token breakdown
@@ -197,7 +214,8 @@ run_submission(dir, challenge_input)
   │    exec(compiled_code, sandbox_globals)
   │    harness calls llm.chat()  →  tracker.record_call()
   │    harness sets result = {...}
-  ├─ extract result["output"], result["score"]
+  ├─ extract result["output"], result["score"] (legacy)
+  ├─ if challenge criteria exist, compute weighted final score (0~100)
   └─ return ExecutionResult(status, output, score, wall_time_sec, token_usage)
 ```
 

@@ -184,7 +184,7 @@ def _run_in_thread(
 
 def _extract_result(
     sandbox_globals: Dict[str, Any],
-) -> tuple[Any, Optional[float]]:
+) -> tuple[Any, Optional[float], Dict[str, Any]]:
     """
     Extract output and score from the sandbox namespace after exec.
 
@@ -192,7 +192,8 @@ def _extract_result(
       - Pattern A: harness sets module-level `result = {"output": ..., "score": ...}`
       - Pattern B: harness defines `def run(): return {"output": ..., "score": ...}`
 
-    Returns (output, score). Score may be None if the harness didn't provide one.
+    Returns (output, score, raw_result_dict).
+    Score may be None if the harness didn't provide one.
     """
     result_val = sandbox_globals.get("result")
 
@@ -224,7 +225,214 @@ def _extract_result(
         except (TypeError, ValueError):
             score = None  # non-numeric score is treated as absent
 
-    return output, score
+    return output, score, result_val
+
+
+def _normalize_criterion_score(raw_value: Any) -> Optional[float]:
+    """
+    Normalize a criterion score to 0~100.
+
+    Accepted formats:
+      - 0.0~1.0 float
+      - 0~100 float/int
+      - numeric strings
+    """
+    if raw_value is None:
+        return None
+    try:
+        value = float(raw_value)
+    except (TypeError, ValueError):
+        return None
+
+    # Interpret [0, 1] as normalized ratio.
+    if 0.0 <= value <= 1.0:
+        value *= 100.0
+
+    # Clamp to a valid percentage range.
+    return max(0.0, min(100.0, value))
+
+
+def _collect_criterion_scores(
+    result_payload: Dict[str, Any],
+    output: Any,
+) -> Dict[str, Any]:
+    """
+    Collect per-criterion scores from a few conventional field names.
+    """
+    score_maps: List[Dict[str, Any]] = []
+
+    for key in ("criterion_scores", "criteria_scores", "evaluation", "scores"):
+        candidate = result_payload.get(key)
+        if isinstance(candidate, dict):
+            score_maps.append(candidate)
+
+    if isinstance(output, dict):
+        for key in ("criterion_scores", "criteria_scores", "evaluation", "scores"):
+            candidate = output.get(key)
+            if isinstance(candidate, dict):
+                score_maps.append(candidate)
+
+    merged: Dict[str, Any] = {}
+    for score_map in score_maps:
+        for key, value in score_map.items():
+            merged[str(key)] = value
+    return merged
+
+
+def _extract_evaluation_criteria(challenge_input: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Read challenge-level evaluation criteria.
+    Supports both camelCase and snake_case keys.
+    """
+    raw_criteria = (
+        challenge_input.get("evaluationCriteria")
+        or challenge_input.get("evaluation_criteria")
+        or challenge_input.get("criteria")
+        or []
+    )
+    if not isinstance(raw_criteria, list):
+        return []
+    return [item for item in raw_criteria if isinstance(item, dict)]
+
+
+def _compute_builtin_criterion_score(
+    criterion_key: str,
+    output: Any,
+    wall_time_sec: float,
+    token_usage: Dict[str, Any],
+) -> Optional[float]:
+    """
+    Compute platform-side criterion scores when a submission doesn't provide one.
+    """
+    key = criterion_key.strip().lower()
+    text = str(output or "")
+    lowered = text.lower()
+
+    if key in {"speed", "latency"}:
+        # 10s => 100, 60s => 0 (linear clamp).
+        return round(max(0.0, min(100.0, (60.0 - wall_time_sec) / 50.0 * 100.0)), 4)
+
+    if key in {"efficiency", "token_efficiency", "cost_efficiency"}:
+        total_tokens = token_usage.get("total_tokens", 0)
+        try:
+            tokens = float(total_tokens)
+        except (TypeError, ValueError):
+            tokens = 0.0
+        # <=2k => high, >=20k => low.
+        return round(max(0.0, min(100.0, (20000.0 - tokens) / 18000.0 * 100.0)), 4)
+
+    if key in {"spec_compliance", "format", "format_compliance"}:
+        checks = [
+            "<!doctype html" in lowered,
+            "<html" in lowered and "</html>" in lowered,
+            "add to bag" in lowered,
+            "data:image/svg+xml" in lowered,
+            "__" not in text,  # unresolved template placeholders
+        ]
+        return round(sum(1 for item in checks if item) / len(checks) * 100.0, 4)
+
+    if key in {"brand_consistency", "brand"}:
+        # A simple platform-side proxy for now.
+        return 100.0 if "brand" in lowered or "<title>" in lowered else 60.0
+
+    if key in {"copy_quality", "writing_quality"}:
+        length = len(text)
+        if length < 1200:
+            return 45.0
+        if length < 2500:
+            return 70.0
+        if length < 4500:
+            return 85.0
+        return 92.0
+
+    return None
+
+
+def _compute_challenge_weighted_score(
+    challenge_input: Dict[str, Any],
+    result_payload: Dict[str, Any],
+    output: Any,
+    wall_time_sec: float,
+    token_usage: Dict[str, Any],
+) -> tuple[Optional[float], Dict[str, Any]]:
+    """
+    Compute weighted challenge score from criterion-level scores.
+
+    The harness-provided top-level `score` is intentionally ignored here.
+    """
+    criteria = _extract_evaluation_criteria(challenge_input)
+    if not criteria:
+        return None, {"reason": "no_challenge_criteria"}
+
+    criterion_scores = _collect_criterion_scores(result_payload, output)
+
+    weighted_total = 0.0
+    weight_sum = 0.0
+    breakdown: List[Dict[str, Any]] = []
+
+    for item in criteria:
+        key = str(item.get("key", "")).strip()
+        if not key:
+            continue
+
+        weight = item.get("weight")
+        # Reference-only criteria are not part of numeric total.
+        if not isinstance(weight, (int, float)):
+            breakdown.append(
+                {
+                    "key": key,
+                    "weight": weight,
+                    "score": None,
+                    "counted": False,
+                    "reason": "non_numeric_weight",
+                }
+            )
+            continue
+
+        normalized_score = _normalize_criterion_score(criterion_scores.get(key))
+        if normalized_score is None:
+            builtin_score = _compute_builtin_criterion_score(
+                criterion_key=key,
+                output=output,
+                wall_time_sec=wall_time_sec,
+                token_usage=token_usage,
+            )
+            if builtin_score is None:
+                normalized_score = 0.0
+                reason = "missing_or_invalid_score"
+            else:
+                normalized_score = builtin_score
+                reason = "platform_builtin"
+        else:
+            reason = "ok"
+
+        weighted_total += normalized_score * float(weight)
+        weight_sum += float(weight)
+        breakdown.append(
+            {
+                "key": key,
+                "weight": float(weight),
+                "score": normalized_score,
+                "counted": True,
+                "reason": reason,
+            }
+        )
+
+    if weight_sum <= 0:
+        return None, {
+            "reason": "no_numeric_weights",
+            "criteria_breakdown": breakdown,
+        }
+
+    final_score = weighted_total / weight_sum
+    final_score = round(max(0.0, min(100.0, final_score)), 4)
+
+    return final_score, {
+        "reason": "computed",
+        "criteria_breakdown": breakdown,
+        "weight_sum": weight_sum,
+        "criterion_scores_source_keys": sorted(list(criterion_scores.keys())),
+    }
 
 
 def _get_printed_output(sandbox_globals: Dict[str, Any]) -> str:
@@ -390,7 +598,7 @@ def run_submission(
 
     # -- Step 6: Extract result ------------------------------------------
     try:
-        output, score = _extract_result(final_globals)
+        output, harness_score, result_payload = _extract_result(final_globals)
     except (ValueError, TypeError) as exc:
         return ExecutionResult(
             status="error",
@@ -403,15 +611,32 @@ def run_submission(
             },
         )
 
+    challenge_score, evaluation_meta = _compute_challenge_weighted_score(
+        challenge_input=challenge_input,
+        result_payload=result_payload,
+        output=output,
+        wall_time_sec=wall_time,
+        token_usage=tracker.to_dict(),
+    )
+
+    # Platform score priority:
+    # 1) challenge weighted score (0~100)
+    # 2) legacy harness score fallback (normalized to 0~100)
+    final_score = challenge_score
+    if final_score is None:
+        final_score = _normalize_criterion_score(harness_score)
+
     return ExecutionResult(
         status="success",
         output=output,
-        score=score,
+        score=final_score,
         wall_time_sec=wall_time,
         token_usage=tracker.to_dict(),
         metadata={
             "printed_output": printed,
             "rag_docs_loaded": list(rag_docs.keys()),
             "mock_client": _use_mock,
+            "evaluation": evaluation_meta,
+            "harness_score_legacy": harness_score,
         },
     )
