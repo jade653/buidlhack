@@ -5,6 +5,12 @@ Public API
 ----------
 run_submission(submission_dir, challenge_input, **kwargs) -> ExecutionResult
     Execute a user submission against a challenge and return structured results.
+    Pass challenge_id + user to auto-submit the score on-chain via the
+    TypeScript Shade Agent after a successful run.
+
+submit_to_chain(result, *, challenge_id, user, ...) -> dict
+    Manually call the TypeScript Shade Agent's /api/submit-score and
+    /api/lock-output endpoints for an already-completed ExecutionResult.
 
 ExecutionResult
     Dataclass holding status, output, score, wall_time_sec, token_usage,
@@ -35,11 +41,12 @@ Quick start
 
 from .client import MockNearAIClient, SandboxedNearAIClient
 from .models import ExecutionResult, SubmissionConfig
-from .runner import run_submission
+from .runner import run_submission, submit_to_chain
 from .tracker import TokenTracker
 
 __all__ = [
     "run_submission",
+    "submit_to_chain",
     "ExecutionResult",
     "SubmissionConfig",
     "SandboxedNearAIClient",
