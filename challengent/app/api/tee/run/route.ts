@@ -321,6 +321,7 @@ print(json.dumps({
     const python = spawn(
       "python3",
       [
+        "-X", "utf8",
         "-c",
         script,
         args.teeEngineDir,
@@ -330,6 +331,7 @@ print(json.dumps({
       ],
       {
         stdio: ["ignore", "pipe", "pipe"],
+        env: { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" },
       },
     );
 
@@ -485,6 +487,68 @@ async function persistToSupabase(args: {
   const rank = rankRows[0]?.rank ?? null;
 
   return { submissionId, rank };
+}
+
+async function submitScoreToNear(args: {
+  challengeId: string;
+  user: string;
+  score: number;
+  output: unknown;
+}): Promise<{ ok: boolean; error?: string }> {
+  const env = process.env;
+  const agentUrl = (env.SHADE_AGENT_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const secret = env.INTERNAL_SECRET ?? "";
+
+  try {
+    const scoreRes = await fetch(`${agentUrl}/api/submit-score`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-internal-secret": secret,
+      },
+      body: JSON.stringify({
+        challenge_id: args.challengeId,
+        user: args.user,
+        score: args.score,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!scoreRes.ok) {
+      const msg = await scoreRes.text();
+      return { ok: false, error: `submit-score HTTP ${scoreRes.status}: ${msg}` };
+    }
+
+    // Lock SHA-256 hash of the output on-chain
+    const outputBytes = new TextEncoder().encode(
+      JSON.stringify(args.output ?? null),
+    );
+    const hashBuffer = await crypto.subtle.digest("SHA-256", outputBytes);
+    const encryptedHash = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    const lockRes = await fetch(`${agentUrl}/api/lock-output`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-internal-secret": secret,
+      },
+      body: JSON.stringify({
+        challenge_id: args.challengeId,
+        user: args.user,
+        encrypted_hash: encryptedHash,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!lockRes.ok) {
+      const msg = await lockRes.text();
+      return { ok: false, error: `lock-output HTTP ${lockRes.status}: ${msg}` };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
 }
 
 function calculateCreditCost(result: TeeRunResponse): number {
@@ -726,6 +790,23 @@ export async function POST(request: Request) {
       challengePath,
       useMockClient,
     });
+
+    // Submit score on-chain via the Shade Agent (best-effort — never fails the request).
+    let nearChainResult: { ok: boolean; error?: string } | null = null;
+    if (result.status === "success" && result.score !== null) {
+      // Engine returns score in 0–100; contract expects 0–1.
+      const scoreNormalized = result.score > 1 ? result.score / 100 : result.score;
+      nearChainResult = await submitScoreToNear({
+        challengeId,
+        user: submitterId,
+        score: scoreNormalized,
+        output: result.output,
+      });
+      if (!nearChainResult.ok) {
+        console.warn("[NEAR] submitScoreToNear failed:", nearChainResult.error);
+      }
+    }
+
     const usedCredits = isAgentApiExecution ? 0 : calculateCreditCost(result);
     const remainingCredits =
       !isAgentApiExecution && authUserId
@@ -757,6 +838,7 @@ export async function POST(request: Request) {
       rank: persisted?.rank ?? null,
       usedCredits,
       remainingCredits,
+      nearChain: nearChainResult,
     });
   } catch (error) {
     const message =
