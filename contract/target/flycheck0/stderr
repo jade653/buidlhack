@@ -1,5 +1,5 @@
-   3.846893700s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint: fingerprint error for agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("agent_challenge_contract", ["cdylib"], "C:\\Users\\shyim\\Documents\\GitHub\\buidlhack\\contract\\src\\lib.rs", Edition2024) }
-   3.848947000s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\agent-challenge-contract-d0d224ec9bd0c561\test-lib-agent_challenge_contract`
+   5.222561900s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint: fingerprint error for agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("agent_challenge_contract", ["cdylib"], "C:\\Users\\shyim\\Documents\\GitHub\\buidlhack\\contract\\src\\lib.rs", Edition2024) }
+   5.224028000s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="agent_challenge_contract"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\agent-challenge-contract-d0d224ec9bd0c561\test-lib-agent_challenge_contract`
 
 Caused by:
     The system cannot find the file specified. (os error 2)
@@ -26,8 +26,8 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-   3.874775300s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="near_workspaces"}: cargo::core::compiler::fingerprint: fingerprint error for near-workspaces v0.15.0/Check { test: false }/TargetInner { ..: lib_target("near_workspaces", ["lib"], "C:\\Users\\shyim\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\near-workspaces-0.15.0\\src\\lib.rs", Edition2018) }
-   3.874825500s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="near_workspaces"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\near-workspaces-624c94878b9a50ed\lib-near_workspaces`
+   5.234475600s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="near_workspaces"}: cargo::core::compiler::fingerprint: fingerprint error for near-workspaces v0.15.0/Check { test: false }/TargetInner { ..: lib_target("near_workspaces", ["lib"], "C:\\Users\\shyim\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\near-workspaces-0.15.0\\src\\lib.rs", Edition2018) }
+   5.234502300s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="near_workspaces"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\near-workspaces-624c94878b9a50ed\lib-near_workspaces`
 
 Caused by:
     The system cannot find the file specified. (os error 2)
@@ -55,8 +55,8 @@ Stack backtrace:
   19: git_midx_writer_dump
   20: BaseThreadInitThunk
   21: RtlUserThreadStart
-   4.560230400s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for near-workspaces v0.15.0/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "C:\\Users\\shyim\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\near-workspaces-0.15.0\\build.rs", Edition2018) }
-   4.560299900s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\near-workspaces-31346dfc0510175d\run-build-script-build-script-build`
+   6.111662100s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for near-workspaces v0.15.0/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "C:\\Users\\shyim\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\near-workspaces-0.15.0\\build.rs", Edition2018) }
+   6.111685800s  INFO prepare_target{force=false package_id=near-workspaces v0.15.0 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\near-workspaces-31346dfc0510175d\run-build-script-build-script-build`
 
 Caused by:
     The system cannot find the file specified. (os error 2)
@@ -86,64 +86,7 @@ Stack backtrace:
   21: git_midx_writer_dump
   22: BaseThreadInitThunk
   23: RtlUserThreadStart
-   4.624598600s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="print_mock"}: cargo::core::compiler::fingerprint: fingerprint error for agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)/Check { test: false }/TargetInner { name: "print_mock", doc: true, ..: with_path("C:\\Users\\shyim\\Documents\\GitHub\\buidlhack\\contract\\src\\bin\\print_mock.rs", Edition2024) }
-   4.624999300s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="print_mock"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\agent-challenge-contract-6cdd2b528b4b0e27\bin-print_mock`
-
-Caused by:
-    The system cannot find the file specified. (os error 2)
-
-Stack backtrace:
-   0: git_midx_writer_dump
-   1: git_midx_writer_dump
-   2: git_midx_writer_dump
-   3: git_midx_writer_dump
-   4: git_filter_source_repo
-   5: git_filter_source_repo
-   6: git_filter_source_repo
-   7: git_filter_source_repo
-   8: git_filter_source_repo
-   9: git_filter_source_repo
-  10: git_filter_source_repo
-  11: git_libgit2_prerelease
-  12: <unknown>
-  13: <unknown>
-  14: <unknown>
-  15: <unknown>
-  16: git_midx_writer_dump
-  17: git_filter_source_repo
-  18: git_midx_writer_dump
-  19: BaseThreadInitThunk
-  20: RtlUserThreadStart
-   4.629738500s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="print_mock"}: cargo::core::compiler::fingerprint: fingerprint error for agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)/Check { test: true }/TargetInner { name: "print_mock", doc: true, ..: with_path("C:\\Users\\shyim\\Documents\\GitHub\\buidlhack\\contract\\src\\bin\\print_mock.rs", Edition2024) }
-   4.629850900s  INFO prepare_target{force=false package_id=agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract) target="print_mock"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\.fingerprint\agent-challenge-contract-c867c38ef273f792\test-bin-print_mock`
-
-Caused by:
-    The system cannot find the file specified. (os error 2)
-
-Stack backtrace:
-   0: git_midx_writer_dump
-   1: git_midx_writer_dump
-   2: git_midx_writer_dump
-   3: git_midx_writer_dump
-   4: git_filter_source_repo
-   5: git_filter_source_repo
-   6: git_filter_source_repo
-   7: git_filter_source_repo
-   8: git_filter_source_repo
-   9: git_filter_source_repo
-  10: git_filter_source_repo
-  11: git_libgit2_prerelease
-  12: <unknown>
-  13: <unknown>
-  14: <unknown>
-  15: <unknown>
-  16: git_midx_writer_dump
-  17: git_filter_source_repo
-  18: git_midx_writer_dump
-  19: BaseThreadInitThunk
-  20: RtlUserThreadStart
    Compiling near-workspaces v0.15.0
-    Checking agent-challenge-contract v0.1.0 (C:\Users\shyim\Documents\GitHub\buidlhack\contract)
 error: failed to run custom build command for `near-workspaces v0.15.0`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -154,7 +97,7 @@ Caused by:
 
   --- stderr
 
-  thread 'main' (33184) panicked at C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-workspaces-0.15.0\build.rs:7:39:
+  thread 'main' (47764) panicked at C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-workspaces-0.15.0\build.rs:7:39:
   Could not install sandbox: Unsupported platform: only linux-x86 and darwin-arm are supported
 
   Stack backtrace:
@@ -226,4 +169,3 @@ Caused by:
     17: BaseThreadInitThunk
     18: RtlUserThreadStart
   note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
-warning: build failed, waiting for other jobs to finish...

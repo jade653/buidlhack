@@ -24,7 +24,7 @@ dotenv.config();
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const NETWORK_ID   = process.env.NEAR_NETWORK_ID    ?? "testnet";
+const NETWORK_ID = (process.env.NEAR_NETWORK_ID ?? "testnet") as "testnet" | "mainnet";
 const CONTRACT_ID  = process.env.AGENT_CONTRACT_ID!;
 const SPONSOR_ID   = process.env.SPONSOR_ACCOUNT_ID!;
 const SPONSOR_KEY  = process.env.SPONSOR_PRIVATE_KEY!;
@@ -210,12 +210,18 @@ async function init() {
     await client.fund(0.3);
   }
 
-  // Registration loop — keeps retrying until the attestation is accepted
+  // Registration loop.
+  // isWhitelisted() returns null when the contract requires TEE (not local mode),
+  // so we can't rely on it as the success signal. Instead, call register() and
+  // treat a successful return (no throw) as confirmed registration.
+  // In local mode (requires_tee: false), isWhitelisted() returns true/false.
   console.log("Registering with NEAR contract...");
-  while (!(await client.isWhitelisted())) {
+  let registered = false;
+  while (!registered) {
     try {
       await client.register();
-      console.log("Registration successful.");
+      registered = true;
+      console.log("Registration successful. Agent:", client.accountId());
     } catch (err) {
       console.warn("Registration failed, retrying in 10 s...", err);
       await sleep(10_000);
