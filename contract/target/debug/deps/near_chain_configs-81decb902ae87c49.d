@@ -1,9 +1,0 @@
-C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\deps\near_chain_configs-81decb902ae87c49.d: C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\lib.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\client_config.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\genesis_config.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\genesis_validate.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\updateable_config.rs
-
-C:\Users\shyim\Documents\GitHub\buidlhack\contract\target\debug\deps\libnear_chain_configs-81decb902ae87c49.rmeta: C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\lib.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\client_config.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\genesis_config.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\genesis_validate.rs C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\updateable_config.rs
-
-C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\lib.rs:
-C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\client_config.rs:
-C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\genesis_config.rs:
-C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\genesis_validate.rs:
-C:\Users\shyim\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\near-chain-configs-0.27.0\src\updateable_config.rs:
