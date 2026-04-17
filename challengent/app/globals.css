@@ -39,10 +39,6 @@ body {
     opacity: 0;
     transform: translateY(48px);
   }
-  80% {
-    opacity: 1;
-    transform: translateY(-6px);
-  }
   100% {
     opacity: 1;
     transform: translateY(0);

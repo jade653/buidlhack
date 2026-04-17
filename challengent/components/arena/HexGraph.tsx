@@ -25,7 +25,7 @@ const HexGraph = () => {
   );
 
   const rings = useMemo(
-    () => [1, 0.8, 0.6, 0.4, 0.2].map((v) => toHexPoints(OUTER_RADIUS * v)),
+    () => [1].map((v) => toHexPoints(OUTER_RADIUS * v)),
     [],
   );
   const ringOutside = useMemo(

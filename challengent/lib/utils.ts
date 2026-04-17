@@ -16,7 +16,7 @@ export function getRankEmoji(rank: number): string {
 }
 
 export function formatNEAR(amount: number): string {
-  return amount.toLocaleString() + " USDC";
+  return "$" + amount.toLocaleString();
 }
 
 export function getCategoryColor(category: string): string {

@@ -43,12 +43,15 @@ export default function LandingPage() {
                     <span
                       className="inline-block animate-slideUp"
                       style={{
-                        animationDelay: `${idx * 0.22 + 0.08}s`,
+                        animationDelay: `${idx * 0.6 + 0.6}s`,
+                        animationDuration: "1.1s",
                         animationFillMode: "both",
+                        animationIterationCount: 1,
                       }}
                     >
                       {line}
                     </span>
+
                     {idx < 3 && <br />}
                   </span>
                 ),

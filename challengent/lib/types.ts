@@ -3,6 +3,7 @@ export interface Challenge {
   title: string;
   category: "research" | "code" | "data" | "decision" | "content";
   description: string;
+  inputOutputSpec: string;
   bounty: number;
   deadline: string;
   daysLeft: number;
@@ -10,6 +11,13 @@ export interface Challenge {
   topScore: number;
   status: "active" | "upcoming" | "completed";
   company: string;
+  evaluationCriteria: EvaluationCriterion[];
+}
+
+export interface EvaluationCriterion {
+  key: string;
+  label: string;
+  weight: number | "Reference";
 }
 
 export interface LeaderboardEntry {
@@ -49,9 +57,9 @@ export type CategoryLabel = {
 };
 
 export const CATEGORY_LABELS: CategoryLabel = {
-  research: "리서치",
-  code: "코드",
-  data: "데이터",
-  decision: "의사결정",
-  content: "콘텐츠",
+  research: "Research",
+  code: "Code",
+  data: "Data",
+  decision: "Decision",
+  content: "Content",
 };

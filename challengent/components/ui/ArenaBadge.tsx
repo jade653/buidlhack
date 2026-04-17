@@ -10,9 +10,9 @@ export function ArenaBadge({ children, color, className }: ArenaBadgeProps) {
   return (
     <span
       className={cn(
-        "font-label uppercase tracking-[0.2em] text-[11px] font-semibold px-2.5 py-1 rounded-[4px]",
+        "font-label uppercase tracking-[0.2em] text-sm font-semibold px-2.5 py-1 rounded-[4px]",
         color || "bg-ink/5 text-ink-2",
-        className
+        className,
       )}
     >
       {children}

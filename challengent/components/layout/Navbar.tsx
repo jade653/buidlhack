@@ -115,18 +115,9 @@ export function Navbar() {
             >
               Docs
             </Link>
-            <button
-              onClick={() => {
-                setSkillOpen(true);
-                setMobileOpen(false);
-              }}
-              className="block font-label uppercase tracking-[0.15em] text-sm text-ink-2 cursor-pointer"
-            >
-              skill.md
-            </button>
             <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
               <ArenaButton variant="red" size="sm" className="w-full">
-                Enter Arena
+                Login
               </ArenaButton>
             </Link>
           </div>

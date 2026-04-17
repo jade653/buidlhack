@@ -4,23 +4,14 @@ import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { mockChallenges } from "@/lib/mock-data";
-import { AgentSlot, CATEGORY_LABELS } from "@/lib/types";
+import { AgentSlot, CATEGORY_LABELS, EvaluationCriterion } from "@/lib/types";
 import { getCategoryColor, formatNEAR, getRankEmoji } from "@/lib/utils";
 import { ArenaButton } from "@/components/ui/ArenaButton";
 import { ArenaBadge } from "@/components/ui/ArenaBadge";
 import { OnChainBadge } from "@/components/ui/OnChainBadge";
-import { HexArena } from "@/components/arena/HexArena";
 import AgentRadarGraph from "@/components/arena/AgentRadarGraph";
 import { useHexArenaSimulation } from "@/hooks/useHexArenaSimulation";
 
-const RADAR_AXIS_LABELS = [
-  "정확도",
-  "완결성",
-  "형식 준수",
-  "속도",
-  "비용 효율",
-  "신뢰성",
-];
 const RADAR_COLORS = [
   "#dc2626",
   "#1d4ed8",
@@ -33,9 +24,12 @@ const RADAR_COLORS = [
 const toRange = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
-const getAgentRadarScores = (agent: AgentSlot) => {
+const getAgentRadarScores = (
+  agent: AgentSlot,
+  criteria: EvaluationCriterion[],
+) => {
   const seed = agent.rank * 13 + Math.round(agent.score * 10);
-  return [
+  const baseline = [
     toRange(agent.score / 100, 0.45, 0.98),
     toRange(agent.score / 100 - (agent.rank % 3) * 0.04 + 0.02, 0.4, 0.95),
     toRange(0.62 + (seed % 9) * 0.03, 0.45, 0.94),
@@ -43,6 +37,12 @@ const getAgentRadarScores = (agent: AgentSlot) => {
     toRange(0.88 - agent.rank * 0.06 + (seed % 5) * 0.02, 0.35, 0.95),
     toRange(0.64 + (seed % 7) * 0.04, 0.45, 0.95),
   ];
+
+  return criteria.map((_, index) => {
+    const fallback = baseline[index % baseline.length];
+    const variance = ((seed + index * 17) % 7) * 0.008 - 0.02;
+    return toRange(fallback + variance, 0.35, 0.98);
+  });
 };
 
 export default function ChallengeDetailPage() {
@@ -51,6 +51,8 @@ export default function ChallengeDetailPage() {
 
   const challenge =
     mockChallenges.find((c) => c.id === id) || mockChallenges[0];
+  const challengeSpec = challenge.inputOutputSpec;
+  const radarAxisLabels = challenge.evaluationCriteria.map((item) => item.label);
   const agents = useHexArenaSimulation();
   const [selectedAgentNames, setSelectedAgentNames] = useState<string[]>([]);
 
@@ -71,10 +73,10 @@ export default function ChallengeDetailPage() {
     return selectedAgents.map((agent, index) => ({
       id: agent.name,
       label: `${getRankEmoji(agent.rank)} ${agent.name}`,
-      values: getAgentRadarScores(agent),
+      values: getAgentRadarScores(agent, challenge.evaluationCriteria),
       color: RADAR_COLORS[index % RADAR_COLORS.length],
     }));
-  }, [selectedAgents]);
+  }, [selectedAgents, challenge.evaluationCriteria]);
 
   const toggleAgentSelection = (agentName: string) => {
     setSelectedAgentNames((prev) =>
@@ -124,30 +126,15 @@ export default function ChallengeDetailPage() {
           </p>
           <h4 className="font-title text-lg">Input/Output Spec</h4>
           <pre className="bg-ink/[0.03] rounded-lg p-4 text-xs overflow-x-auto">
-            {`Input: {
-  "companies": ["Samsung Electronics", "LG Electronics", "SK Hynix", "Hyundai Motor", "POSCO"],
-  "period": "FY2024"
-}
-
-Output: {
-  "report": "Analysis report in markdown format",
-  "data": [{ "company": "string", "revenue": number, "growth": number }]
-}`}
+            {challengeSpec}
           </pre>
 
           <h3 className="font-title text-2xl">Evaluation Criteria</h3>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[
-              { label: "정확도", weight: 40 },
-              { label: "완결성", weight: 30 },
-              { label: "형식 준수", weight: 15 },
-              { label: "Speed", weight: 15 },
-              { label: "비용 효율", weight: "참고" },
-              { label: "신뢰성", weight: "참고" },
-            ].map((item) => (
+            {challenge.evaluationCriteria.map((item) => (
               <div
-                key={item.label}
+                key={item.key}
                 className="bg-surface border border-border rounded-lg p-4 text-center"
               >
                 <div className="font-title text-3xl text-red">
@@ -175,7 +162,7 @@ Output: {
           <div className="hidden xl:block mb-6">
             <AgentRadarGraph
               size={280}
-              axisLabels={RADAR_AXIS_LABELS}
+              axisLabels={radarAxisLabels}
               series={radarSeries}
             />
           </div>

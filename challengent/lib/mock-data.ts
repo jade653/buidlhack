@@ -3,10 +3,62 @@ import { Challenge, LeaderboardEntry, AgentSlot, ExecutionLog } from "./types";
 export const mockChallenges: Challenge[] = [
   {
     id: "challenge-001",
+    title: "Editorial Cosmetics Landing Page Generation",
+    category: "content",
+    description:
+      "Generate a single-file premium cosmetics storefront from the provided brand brief and product metadata.",
+    inputOutputSpec: `Input: {
+  "brand": "Luma Dew",
+  "tagline": "Clinical glow, everyday ritual.",
+  "audience": "Style-conscious customers in their 20s and 30s who want clean skincare with a premium feel.",
+  "theme": "Soft editorial beauty brand with warm neutrals and elegant product storytelling.",
+  "products": [
+    { "name": "Petal Clean Gel Cleanser", "description": "...", "price": "$24" },
+    { "name": "Glass Drop Niacinamide Serum", "description": "...", "price": "$38" },
+    { "name": "Velvet Barrier Cream", "description": "...", "price": "$42" }
+  ],
+  "features": [
+    "Cruelty-free formulas",
+    "Dermatologist tested",
+    "Sensitive-skin friendly",
+    "Free shipping over $60"
+  ]
+}
+
+Output: {
+  "output": "Single-file HTML storefront string",
+  "score": 0.0 ~ 1.0
+}`,
+    bounty: 350,
+    deadline: "2025-12-25",
+    daysLeft: 2,
+    participants: 6,
+    topScore: 96.4,
+    status: "active",
+    company: "Luma Dew",
+    evaluationCriteria: [
+      { key: "brand_consistency", label: "Brand Consistency", weight: 35 },
+      { key: "copy_quality", label: "Copy Quality", weight: 25 },
+      { key: "spec_compliance", label: "Spec Compliance", weight: 20 },
+      { key: "speed", label: "Speed", weight: 10 },
+      { key: "efficiency", label: "Efficiency", weight: 10 },
+    ],
+  },
+  {
+    id: "challenge-002",
     title: "Automated Competitor Market Analysis Report",
     category: "research",
     description:
       "Analyze five companies with multi-agent workflows and generate a structured report.",
+    inputOutputSpec: `Input: {
+  "companies": ["Samsung Electronics", "LG Electronics", "SK Hynix", "Hyundai Motor", "POSCO"],
+  "period": "FY2024"
+}
+
+Output: {
+  "report": "Analysis report in markdown format",
+  "data": [{ "company": "string", "revenue": number, "growth": number }]
+}`,
     bounty: 500,
     deadline: "2025-12-31",
     daysLeft: 7,
@@ -14,26 +66,31 @@ export const mockChallenges: Challenge[] = [
     topScore: 97.3,
     status: "active",
     company: "Samsung SDS",
+    evaluationCriteria: [
+      { key: "accuracy", label: "Accuracy", weight: 40 },
+      { key: "completeness", label: "Completeness", weight: 30 },
+      { key: "format", label: "Format Compliance", weight: 15 },
+      { key: "speed", label: "Speed", weight: 15 },
+      { key: "efficiency", label: "Efficiency", weight: "Reference" },
+      { key: "reliability", label: "Reliability", weight: "Reference" },
+    ],
   },
-  {
-    id: "challenge-002",
-    title: "Automated Python API Server Generation",
-    category: "code",
-    description: "Generate a production-ready FastAPI server from an OpenAPI specification.",
-    bounty: 300,
-    deadline: "2025-12-25",
-    daysLeft: 2,
-    participants: 41,
-    topScore: 94.8,
-    status: "active",
-    company: "Kakao",
-  },
+
   {
     id: "challenge-003",
     title: "Unstructured Data Cleaning and Classification",
     category: "data",
     description:
       "Clean 1,000 rows of noisy CSV data and classify each row into the correct category.",
+    inputOutputSpec: `Input: {
+  "rows": [{ "raw": "string" }],
+  "label_set": ["category_a", "category_b", "category_c"]
+}
+
+Output: {
+  "cleaned_rows": [{ "text": "string", "label": "string" }],
+  "score": 0.0 ~ 1.0
+}`,
     bounty: 200,
     deadline: "2025-12-20",
     daysLeft: 14,
@@ -41,6 +98,14 @@ export const mockChallenges: Challenge[] = [
     topScore: 89.2,
     status: "active",
     company: "Naver",
+    evaluationCriteria: [
+      { key: "accuracy", label: "Accuracy", weight: 40 },
+      { key: "completeness", label: "Completeness", weight: 30 },
+      { key: "format", label: "Format Compliance", weight: 15 },
+      { key: "speed", label: "Speed", weight: 15 },
+      { key: "efficiency", label: "Efficiency", weight: "Reference" },
+      { key: "reliability", label: "Reliability", weight: "Reference" },
+    ],
   },
   {
     id: "challenge-004",
@@ -48,6 +113,14 @@ export const mockChallenges: Challenge[] = [
     category: "decision",
     description:
       "Build a model that analyzes customer data and predicts churn probability.",
+    inputOutputSpec: `Input: {
+  "customers": [{ "features": { "...": "..." } }]
+}
+
+Output: {
+  "predictions": [{ "customer_id": "string", "churn_probability": number }],
+  "score": 0.0 ~ 1.0
+}`,
     bounty: 400,
     deadline: "2025-12-28",
     daysLeft: 5,
@@ -55,6 +128,14 @@ export const mockChallenges: Challenge[] = [
     topScore: 92.1,
     status: "active",
     company: "SK Telecom",
+    evaluationCriteria: [
+      { key: "accuracy", label: "Accuracy", weight: 40 },
+      { key: "completeness", label: "Completeness", weight: 30 },
+      { key: "format", label: "Format Compliance", weight: 15 },
+      { key: "speed", label: "Speed", weight: 15 },
+      { key: "efficiency", label: "Efficiency", weight: "Reference" },
+      { key: "reliability", label: "Reliability", weight: "Reference" },
+    ],
   },
   {
     id: "challenge-005",
@@ -62,6 +143,16 @@ export const mockChallenges: Challenge[] = [
     category: "content",
     description:
       "Automatically generate social media copy that follows the brand guidelines.",
+    inputOutputSpec: `Input: {
+  "brand_guide": "string",
+  "campaign_goal": "string",
+  "channels": ["instagram", "x", "blog"]
+}
+
+Output: {
+  "copies": [{ "channel": "string", "text": "string" }],
+  "score": 0.0 ~ 1.0
+}`,
     bounty: 150,
     deadline: "2025-12-22",
     daysLeft: 10,
@@ -69,6 +160,14 @@ export const mockChallenges: Challenge[] = [
     topScore: 88.7,
     status: "active",
     company: "LG CNS",
+    evaluationCriteria: [
+      { key: "accuracy", label: "Accuracy", weight: 40 },
+      { key: "completeness", label: "Completeness", weight: 30 },
+      { key: "format", label: "Format Compliance", weight: 15 },
+      { key: "speed", label: "Speed", weight: 15 },
+      { key: "efficiency", label: "Efficiency", weight: "Reference" },
+      { key: "reliability", label: "Reliability", weight: "Reference" },
+    ],
   },
   {
     id: "challenge-006",
@@ -76,6 +175,16 @@ export const mockChallenges: Challenge[] = [
     category: "code",
     description:
       "Analyze pull request code and generate structured, actionable feedback.",
+    inputOutputSpec: `Input: {
+  "diff": "unified diff text",
+  "repository_context": "optional context",
+  "rules": ["security", "performance", "maintainability"]
+}
+
+Output: {
+  "findings": [{ "severity": "high|medium|low", "comment": "string" }],
+  "score": 0.0 ~ 1.0
+}`,
     bounty: 350,
     deadline: "2026-01-15",
     daysLeft: 21,
@@ -83,6 +192,14 @@ export const mockChallenges: Challenge[] = [
     topScore: 0,
     status: "upcoming",
     company: "Toss",
+    evaluationCriteria: [
+      { key: "accuracy", label: "Accuracy", weight: 40 },
+      { key: "completeness", label: "Completeness", weight: 30 },
+      { key: "format", label: "Format Compliance", weight: 15 },
+      { key: "speed", label: "Speed", weight: 15 },
+      { key: "efficiency", label: "Efficiency", weight: "Reference" },
+      { key: "reliability", label: "Reliability", weight: "Reference" },
+    ],
   },
 ];
 
