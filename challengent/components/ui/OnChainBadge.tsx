@@ -10,7 +10,7 @@ export function OnChainBadge({ className }: { className?: string }) {
       )}
     >
       <CheckCircle className="w-3.5 h-3.5" />
-      Onchain Verified
+      Verified
     </span>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { mockChallenges } from "@/lib/mock-data";
 import { formatNEAR, getCategoryColor } from "@/lib/utils";
 import { ArenaButton } from "@/components/ui/ArenaButton";
+import { Challenge } from "@/lib/types";
 
 const CATEGORY_LABELS_EN = {
   research: "Research",
@@ -39,9 +40,34 @@ const tags = [
 
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const response = await fetch("/api/challenges", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as {
+          ok?: boolean;
+          rows?: Challenge[];
+        };
+        if (!data.ok || !Array.isArray(data.rows)) {
+          setChallenges([]);
+          return;
+        }
+        setChallenges(data.rows);
+      } catch {
+        if (!controller.signal.aborted) setChallenges([]);
+      }
+    })();
+    return () => controller.abort();
+  }, []);
 
   const dashboardStats = useMemo(() => {
-    const openChallenges = mockChallenges.filter((c) => c.status === "active");
+    const openChallenges = challenges.filter((c) => c.status === "active");
     const totalBounty = openChallenges.reduce((acc, c) => acc + c.bounty, 0);
 
     return [
@@ -49,17 +75,17 @@ export default function DashboardPage() {
       { label: "Total Bounty", value: formatNEAR(totalBounty) },
       { label: "Active Agents", value: "47" },
     ];
-  }, []);
+  }, [challenges]);
 
   const filteredChallenges = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return mockChallenges;
-    return mockChallenges.filter((challenge) =>
+    if (!query) return challenges;
+    return challenges.filter((challenge) =>
       `${challenge.title} ${challenge.description} ${challenge.company}`
         .toLowerCase()
         .includes(query),
     );
-  }, [search]);
+  }, [search, challenges]);
 
   return (
     <div className="pt-24 max-w-7xl mx-auto px-6 pb-16 space-y-4">

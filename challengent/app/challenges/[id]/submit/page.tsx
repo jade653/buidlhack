@@ -4,14 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { mockChallenges } from "@/lib/mock-data";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ArenaButton } from "@/components/ui/ArenaButton";
 import { ArenaBadge } from "@/components/ui/ArenaBadge";
 import { StatBar } from "@/components/ui/StatBar";
 import { OnChainBadge } from "@/components/ui/OnChainBadge";
 import { Challenge } from "@/lib/types";
-import { Rotate3D, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
 type Phase = "submit" | "running" | "result";
 
@@ -35,6 +34,18 @@ type TeeRunResult = {
 
 type SubmissionSource = "inline" | "github";
 type OutputViewMode = "text" | "rendered";
+type RunDebugInfo = {
+  at: string;
+  httpStatus: number;
+  ok: boolean;
+  error: string | null;
+  runStatus: TeeRunResult["status"] | null;
+  executionMode: "near-ai-cloud" | "mock" | null;
+  runMode: "manual" | "autonomous" | null;
+  resultError: string | null;
+  metadata: Record<string, unknown> | null;
+  tokenUsage: TeeRunResult["token_usage"] | null;
+};
 
 const estimateTokensFromText = (text: string): number =>
   Math.max(1, Math.ceil(text.length / 4));
@@ -78,18 +89,17 @@ ${challenge.inputOutputSpec}
 
 ## Completion Conditions
 - The result must comply with the platform output spec.
-- The final score must be returned in the range 0.0 to 1.0.
+- The final score is computed by the platform from challenge criteria.
 `;
 
 export default function SubmitPage() {
   const params = useParams();
   const pathname = usePathname();
   const id = params.id as string;
-  const challenge =
-    mockChallenges.find((c) => c.id === id) || mockChallenges[0];
-  const challengeGuide = buildDefaultBaseGuide(challenge);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const challengeGuide = challenge ? buildDefaultBaseGuide(challenge) : "";
 
-  const [phase, setPhase] = useState<Phase>("running");
+  const [phase, setPhase] = useState<Phase>("submit");
   const [baseGuide, setBaseGuide] = useState(challengeGuide);
   const [submissionSource, setSubmissionSource] =
     useState<SubmissionSource>("github");
@@ -108,6 +118,7 @@ export default function SubmitPage() {
   const [currentRank, setCurrentRank] = useState<number | null>(null);
   const [outputViewMode, setOutputViewMode] = useState<OutputViewMode>("text");
   const [runError, setRunError] = useState<string | null>(null);
+  const [runDebugInfo, setRunDebugInfo] = useState<RunDebugInfo | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
@@ -115,6 +126,30 @@ export default function SubmitPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [authConfigError, setAuthConfigError] = useState(false);
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const response = await fetch(`/api/challenges/${id}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as {
+          ok?: boolean;
+          row?: Challenge;
+        };
+        if (!data.ok || !data.row) {
+          setChallenge(null);
+          return;
+        }
+        setChallenge(data.row);
+      } catch {
+        if (!controller.signal.aborted) setChallenge(null);
+      }
+    })();
+    return () => controller.abort();
+  }, [id]);
 
   const fetchMyCredits = async () => {
     const creditResponse = await fetch("/api/credits/me", {
@@ -213,6 +248,7 @@ export default function SubmitPage() {
     setLastControlSignal(null);
     setStartedAt(Date.now());
     setElapsedSec(0);
+    setRunDebugInfo(null);
     setPhase("running");
     addRuntimeEvent("Building submission package (applying base-guide.md)");
     addRuntimeEvent("Sending execution request to backend / TEE");
@@ -240,6 +276,20 @@ export default function SubmitPage() {
       });
 
       const data = await response.json();
+      const resultForDebug = (data.result as TeeRunResult | undefined) ?? null;
+      setRunDebugInfo({
+        at: new Date().toISOString(),
+        httpStatus: response.status,
+        ok: Boolean(data.ok),
+        error: typeof data.error === "string" ? data.error : null,
+        runStatus: resultForDebug?.status ?? null,
+        executionMode:
+          (data.executionMode as "near-ai-cloud" | "mock" | undefined) ?? null,
+        runMode: (data.runMode as "manual" | "autonomous" | undefined) ?? null,
+        resultError: resultForDebug?.error ?? null,
+        metadata: resultForDebug?.metadata ?? null,
+        tokenUsage: resultForDebug?.token_usage ?? null,
+      });
       if (!response.ok || !data.ok) {
         throw new Error(data.error || "Failed to execute request in TEE.");
       }
@@ -273,6 +323,18 @@ export default function SubmitPage() {
         const message =
           error instanceof Error ? error.message : "An unknown error occurred.";
         setRunError(message);
+        setRunDebugInfo((prev) => ({
+          at: new Date().toISOString(),
+          httpStatus: prev?.httpStatus ?? 0,
+          ok: false,
+          error: message,
+          runStatus: prev?.runStatus ?? null,
+          executionMode: prev?.executionMode ?? null,
+          runMode: prev?.runMode ?? null,
+          resultError: prev?.resultError ?? null,
+          metadata: prev?.metadata ?? null,
+          tokenUsage: prev?.tokenUsage ?? null,
+        }));
         addRuntimeEvent(`Failed: ${message}`);
       }
       setPhase("submit");
@@ -300,10 +362,8 @@ export default function SubmitPage() {
   };
 
   const totalTokens = runResult?.token_usage?.total_tokens ?? 0;
-  const finalScore = runResult?.score
-    ? Math.round(runResult.score * 1000) / 10
-    : 0;
-  const criterionScores = challenge.evaluationCriteria.map((item, index) => {
+  const finalScore = runResult?.score ? Math.round(runResult.score * 10) / 10 : 0;
+  const criterionScores = (challenge?.evaluationCriteria ?? []).map((item, index) => {
     const base = finalScore;
     const weightBoost = typeof item.weight === "number" ? item.weight / 15 : 3;
     const variance = ((index % 4) - 1.5) * 2.2;
@@ -324,13 +384,23 @@ export default function SubmitPage() {
     /<html[\s>]|<!doctype html|<body[\s>]/i.test(htmlOutput.slice(0, 500)),
   );
   const basePromptTokens = estimateTokensFromText(
-    `${baseGuide}\n${challenge.inputOutputSpec}`,
+    `${baseGuide}\n${challenge?.inputOutputSpec ?? ""}`,
   );
   const estimatedCallCount = submissionSource === "github" ? 3 : 2;
   const estimatedTotalTokens = Math.round(
     basePromptTokens * estimatedCallCount + 900,
   );
   const estimatedCredits = Math.max(1, Math.round(estimatedTotalTokens / 1000));
+
+  if (!challenge) {
+    return (
+      <div className="pt-24 max-w-7xl mx-auto px-6 pb-16">
+        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-2">
+          챌린지 데이터를 불러오는 중이거나, 챌린지를 찾을 수 없습니다.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 max-w-7xl mx-auto px-6 pb-16">
@@ -376,7 +446,7 @@ export default function SubmitPage() {
               </Link>
             </div>
           )}
-          {authChecked && authUser && (
+          {/* {authChecked && authUser && (
             <div className="rounded-lg border border-border bg-surface p-3 text-sm text-ink-2">
               로그인:{" "}
               <span className="font-medium text-ink">
@@ -392,7 +462,7 @@ export default function SubmitPage() {
                 </span>
               </span>
             </div>
-          )}
+          )} */}
           <div className="flex items-center gap-3">
             <div className="w-8 h-[2px] bg-red" />
             <span className="font-label uppercase tracking-[0.2em] text-xs text-ink-2">
@@ -816,6 +886,51 @@ export default function SubmitPage() {
               )}
             </div>
           </div>
+
+          {(runResult?.status === "error" ||
+            runDebugInfo?.error ||
+            runResult?.error) && (
+            <div className="rounded-lg border border-amber-300/40 bg-amber-50 p-4 space-y-3">
+              <div className="font-label uppercase tracking-wider text-xs text-amber-900">
+                Execution Diagnostics
+              </div>
+              <div className="text-sm text-amber-900 space-y-1">
+                <div>HTTP: {runDebugInfo?.httpStatus ?? "—"}</div>
+                <div>
+                  Run status:{" "}
+                  {runResult?.status ?? runDebugInfo?.runStatus ?? "—"}
+                </div>
+                <div>
+                  Mode: {runDebugInfo?.executionMode ?? executionMode ?? "—"}
+                </div>
+                <div>Run mode: {runDebugInfo?.runMode ?? "—"}</div>
+                <div>API error: {runDebugInfo?.error ?? "—"}</div>
+                <div>
+                  Engine error:{" "}
+                  {runResult?.error ?? runDebugInfo?.resultError ?? "—"}
+                </div>
+              </div>
+              <details className="text-xs">
+                <summary className="cursor-pointer text-amber-900">
+                  View metadata / token usage
+                </summary>
+                <pre className="mt-2 overflow-auto rounded bg-[#1e1e1e] p-3 text-gray-200 whitespace-pre-wrap">
+                  {JSON.stringify(
+                    {
+                      metadata:
+                        runResult?.metadata ?? runDebugInfo?.metadata ?? {},
+                      token_usage:
+                        runResult?.token_usage ??
+                        runDebugInfo?.tokenUsage ??
+                        {},
+                    },
+                    null,
+                    2,
+                  )}
+                </pre>
+              </details>
+            </div>
+          )}
 
           <div className="space-y-4">
             <div className="flex gap-4 justify-center">

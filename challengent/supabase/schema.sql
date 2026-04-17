@@ -100,6 +100,36 @@ create table if not exists public.submissions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.challenges (
+  id text primary key,
+  title text not null,
+  category text not null check (category in ('research', 'code', 'data', 'decision', 'content')),
+  description text not null,
+  input_output_spec text not null,
+  company text not null,
+  status text not null check (status in ('active', 'upcoming', 'completed')),
+  bounty integer not null default 0,
+  deadline date,
+  challenge_input jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.challenge_evaluation_criteria (
+  id bigserial primary key,
+  challenge_id text not null references public.challenges(id) on delete cascade,
+  criterion_key text not null,
+  label text not null,
+  weight double precision,
+  is_reference_only boolean not null default false,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  unique (challenge_id, criterion_key)
+);
+
+create index if not exists challenge_eval_criteria_challenge_sort_idx
+  on public.challenge_evaluation_criteria (challenge_id, sort_order, id);
+
 create index if not exists submissions_challenge_created_idx
   on public.submissions (challenge_id, created_at desc);
 

@@ -3,8 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { mockChallenges } from "@/lib/mock-data";
-import { AgentSlot, CATEGORY_LABELS, EvaluationCriterion } from "@/lib/types";
+import {
+  AgentSlot,
+  CATEGORY_LABELS,
+  Challenge,
+  EvaluationCriterion,
+} from "@/lib/types";
 import { getCategoryColor, formatNEAR, getRankEmoji } from "@/lib/utils";
 import { ArenaButton } from "@/components/ui/ArenaButton";
 import { ArenaBadge } from "@/components/ui/ArenaBadge";
@@ -107,16 +111,37 @@ function mockTokensFromRank(rank: number) {
 export default function ChallengeDetailPage() {
   const params = useParams();
   const id = params.id as string;
-
-  const challenge =
-    mockChallenges.find((c) => c.id === id) || mockChallenges[0];
-  const challengeSpec = challenge.inputOutputSpec;
-  const radarAxisLabels = challenge.evaluationCriteria.map((item) => item.label);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const radarAxisLabels = challenge?.evaluationCriteria.map((item) => item.label) ?? [];
   const [liveRows, setLiveRows] = useState<ApiLeaderboardRow[] | null>(null);
   const useLiveBoard = liveRows !== null;
   const simInterval = useLiveBoard ? 0 : 3000;
   const agents = useHexArenaSimulation(undefined, simInterval);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const response = await fetch(`/api/challenges/${id}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as {
+          ok?: boolean;
+          row?: Challenge;
+        };
+        if (!data.ok || !data.row) {
+          setChallenge(null);
+          return;
+        }
+        setChallenge(data.row);
+      } catch {
+        if (!controller.signal.aborted) setChallenge(null);
+      }
+    })();
+    return () => controller.abort();
+  }, [id]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -147,6 +172,9 @@ export default function ChallengeDetailPage() {
 
     return () => controller.abort();
   }, [id]);
+
+  const challengeSpec = challenge?.inputOutputSpec ?? "";
+  const evaluationCriteria = challenge?.evaluationCriteria ?? [];
 
   const boardParticipants: BoardParticipant[] = useMemo(() => {
     if (liveRows) {
@@ -204,11 +232,21 @@ export default function ChallengeDetailPage() {
       return {
         id: participant.key,
         label: `${getRankEmoji(participant.rank)} ${participant.displayName}`,
-        values: getAgentRadarScores(slot, challenge.evaluationCriteria),
+        values: getAgentRadarScores(slot, evaluationCriteria),
         color: RADAR_COLORS[index % RADAR_COLORS.length],
       };
     });
-  }, [selectedParticipants, challenge.evaluationCriteria]);
+  }, [selectedParticipants, evaluationCriteria]);
+
+  if (!challenge) {
+    return (
+      <div className="pt-24 max-w-7xl mx-auto px-6 pb-16">
+        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-2">
+          챌린지 데이터를 불러오는 중이거나, 챌린지를 찾을 수 없습니다.
+        </div>
+      </div>
+    );
+  }
 
   const toggleParticipantSelection = (key: string) => {
     setSelectedKeys((prev) =>
@@ -307,7 +345,7 @@ export default function ChallengeDetailPage() {
                   <th className="text-right py-3 px-2">Speed</th>
                   <th className="text-right py-3 px-2">Tokens</th>
                   <th className="text-right py-3 px-2">Final</th>
-                  <th className="text-right py-3 px-2">Verified</th>
+                  <th className="text-right py-3 px-2">Onchain Verified</th>
                 </tr>
               </thead>
               <tbody>
@@ -319,19 +357,21 @@ export default function ChallengeDetailPage() {
                       className={`border-b border-border/50 transition-all duration-300 cursor-pointer ${
                         isSelected ? "bg-red/5" : "hover:bg-ink/[0.02]"
                       }`}
-                      onClick={() => toggleParticipantSelection(participant.key)}
+                      onClick={() =>
+                        toggleParticipantSelection(participant.key)
+                      }
                     >
                       <td className="py-3 px-2 text-lg">
                         {getRankEmoji(participant.rank)}
                       </td>
                       <td className="py-3 px-2">
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex gap-1.5 items-center">
                           <div className="font-label font-semibold">
                             {participant.displayName}
                           </div>
-                          <div>
+                          {/* <div>
                             <PrincipalBadge type={participant.principalType} />
-                          </div>
+                          </div> */}
                           <div>
                             <RunModeBadge mode={participant.runMode} />
                           </div>

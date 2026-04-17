@@ -44,6 +44,19 @@ type PersistedSubmissionInfo = {
   rank: number | null;
 };
 
+type DbChallengeRow = {
+  id: string;
+  challenge_input: Record<string, unknown> | null;
+};
+
+type DbChallengeCriterionRow = {
+  criterion_key: string;
+  label: string;
+  weight: number | null;
+  is_reference_only: boolean | null;
+  sort_order: number | null;
+};
+
 const ALLOWED_EXTENSIONS = new Set([".py", ".md", ".json", ".txt"]);
 const MIN_EXECUTION_CREDIT = 1;
 
@@ -141,6 +154,70 @@ async function validateSubmissionDir(submissionDir: string): Promise<void> {
       );
     }
   }
+}
+
+async function loadChallengeInputFromSupabase(
+  challengeId: string,
+): Promise<Record<string, unknown> | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  const headers = {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`,
+  };
+
+  const challengeRes = await fetch(
+    `${supabaseUrl}/rest/v1/challenges?id=eq.${encodeURIComponent(challengeId)}&select=id,challenge_input&limit=1`,
+    {
+      method: "GET",
+      headers,
+      cache: "no-store",
+    },
+  );
+  if (!challengeRes.ok) {
+    const message = await challengeRes.text();
+    throw new Error(`Failed to load challenge from Supabase: ${message}`);
+  }
+
+  const rows = (await challengeRes.json()) as DbChallengeRow[];
+  const row = rows[0];
+  if (!row) return null;
+
+  const challengeInput =
+    row.challenge_input && typeof row.challenge_input === "object"
+      ? { ...row.challenge_input }
+      : {};
+
+  const criteriaRes = await fetch(
+    `${supabaseUrl}/rest/v1/challenge_evaluation_criteria?challenge_id=eq.${encodeURIComponent(challengeId)}&select=criterion_key,label,weight,is_reference_only,sort_order&order=sort_order.asc,id.asc`,
+    {
+      method: "GET",
+      headers,
+      cache: "no-store",
+    },
+  );
+  if (!criteriaRes.ok) {
+    const message = await criteriaRes.text();
+    throw new Error(
+      `Failed to load challenge evaluation criteria from Supabase: ${message}`,
+    );
+  }
+
+  const criteriaRows = (await criteriaRes.json()) as DbChallengeCriterionRow[];
+  if (criteriaRows.length > 0) {
+    challengeInput.evaluationCriteria = criteriaRows.map((item) => ({
+      key: item.criterion_key,
+      label: item.label,
+      weight:
+        item.is_reference_only || item.weight === null
+          ? "Reference"
+          : item.weight,
+    }));
+  }
+
+  return challengeInput;
 }
 
 function runPythonSubmission(args: {
@@ -477,7 +554,7 @@ export async function POST(request: Request) {
   const appRoot = process.cwd();
   const teeEngineDir = path.resolve(appRoot, "../tee-engine");
   const sampleDir = path.join(teeEngineDir, "samples", "cosmetic1");
-  const challengePath = path.join(
+  const fallbackChallengePath = path.join(
     teeEngineDir,
     "samples",
     "cosmetics_challenge_input.json",
@@ -517,6 +594,7 @@ export async function POST(request: Request) {
 
     tempRoot = await mkdtemp(path.join(tmpdir(), "challengent-submission-"));
     const submissionDir = path.join(tempRoot, "submission");
+    const challengePath = path.join(tempRoot, "challenge_input.json");
 
     if (source === "github") {
       const repoRaw = body.github?.repo?.trim();
@@ -544,7 +622,22 @@ export async function POST(request: Request) {
       path.join(submissionDir, "harness.py"),
       "utf-8",
     );
-    await writeFile(path.join(submissionDir, "agent.md"), `${baseGuide}\n`, "utf-8");
+    await writeFile(
+      path.join(submissionDir, "base-guide.md"),
+      `${baseGuide}\n`,
+      "utf-8",
+    );
+
+    const dbChallengeInput = await loadChallengeInputFromSupabase(challengeId);
+    if (dbChallengeInput) {
+      await writeFile(
+        challengePath,
+        `${JSON.stringify(dbChallengeInput, null, 2)}\n`,
+        "utf-8",
+      );
+    } else {
+      await cp(fallbackChallengePath, challengePath);
+    }
 
     const result = await runPythonSubmission({
       teeEngineDir,

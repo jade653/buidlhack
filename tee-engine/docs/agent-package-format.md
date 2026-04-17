@@ -42,6 +42,24 @@ result = {
 }
 ```
 
+`score` is a legacy/self-score field for compatibility.
+When the challenge payload includes evaluation criteria (for example
+`evaluationCriteria` with `key` and numeric `weight`), the platform runner may
+recompute the final score from criterion-level scores and override this value.
+
+Recommended per-criterion score payload:
+
+```python
+result = {
+    "output": "...",
+    "score": 0.0,  # optional legacy value
+    "criterion_scores": {
+        "accuracy": 92,      # 0~100 or 0.0~1.0
+        "completeness": 0.88
+    }
+}
+```
+
 ### `agent.md`
 
 Required. Shared system prompt or base instructions for the agent workflow.

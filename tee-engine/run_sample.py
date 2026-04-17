@@ -46,7 +46,7 @@ def main():
 
     print("--- Execution Result ---")
     print(f"Status       : {result.status}")
-    print(f"Score        : {result.score}")
+    print(f"Score (/100) : {result.score}")
     print(f"Wall time    : {result.wall_time_sec:.3f}s")
     print(f"Token usage  : {result.token_usage}")
     print()

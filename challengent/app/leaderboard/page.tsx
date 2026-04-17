@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ArenaCard } from "@/components/ui/ArenaCard";
 import { OnChainBadge } from "@/components/ui/OnChainBadge";
 import { PrincipalBadge } from "@/components/ui/PrincipalBadge";
-import { mockLeaderboard } from "@/lib/mock-data";
+import { mockLeaderboard } from "@/lib/mock-runtime";
 import { formatNEAR, getRankEmoji } from "@/lib/utils";
 
 type SortBy = "score" | "bounty" | "challenges";

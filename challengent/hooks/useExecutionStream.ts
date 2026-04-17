@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ExecutionLog } from "@/lib/types";
-import { mockExecutionStream } from "@/lib/mock-data";
+import { mockExecutionStream } from "@/lib/mock-runtime";
 
 type StreamStatus = "idle" | "running" | "interrupted" | "completed";
 

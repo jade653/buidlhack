@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { AgentSlot } from "@/lib/types";
-import { mockHexAgents } from "@/lib/mock-data";
+import { mockHexAgents } from "@/lib/mock-runtime";
 
 const POSITIONS: AgentSlot["position"][] = [
   "top",
