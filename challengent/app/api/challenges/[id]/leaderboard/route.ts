@@ -11,6 +11,13 @@ type LeaderboardRow = {
   score: number | null;
   wall_time_sec: number;
   total_tokens: number;
+  criterion_scores: Record<string, number>;
+};
+
+type CriterionScoreRow = {
+  submission_id: string;
+  criterion_key: string;
+  score: number;
 };
 
 export async function GET(
@@ -58,6 +65,46 @@ export async function GET(
     );
   }
 
-  const rows = (await response.json()) as LeaderboardRow[];
-  return NextResponse.json({ ok: true, rows });
+  const rows = (await response.json()) as Array<Omit<LeaderboardRow, "criterion_scores">>;
+  const submissionIds = rows.map((item) => item.submission_id).filter(Boolean);
+  if (submissionIds.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      rows: rows.map((item) => ({ ...item, criterion_scores: {} })),
+    });
+  }
+
+  const criteriaUrl = new URL(`${supabaseUrl}/rest/v1/submission_criterion_scores`);
+  criteriaUrl.searchParams.set("challenge_id", `eq.${challengeId}`);
+  criteriaUrl.searchParams.set(
+    "submission_id",
+    `in.(${submissionIds.map((id) => `"${id}"`).join(",")})`,
+  );
+  criteriaUrl.searchParams.set("select", "submission_id,criterion_key,score");
+  const criteriaResponse = await fetch(criteriaUrl.toString(), {
+    method: "GET",
+    headers,
+  });
+  if (!criteriaResponse.ok) {
+    const message = await criteriaResponse.text();
+    return NextResponse.json({
+      ok: true,
+      warning:
+        message || "Failed to load criterion scores. Returning leaderboard only.",
+      rows: rows.map((item) => ({ ...item, criterion_scores: {} })),
+    });
+  }
+  const criterionRows = (await criteriaResponse.json()) as CriterionScoreRow[];
+  const criterionScoresBySubmission = new Map<string, Record<string, number>>();
+  for (const item of criterionRows) {
+    const prev = criterionScoresBySubmission.get(item.submission_id) ?? {};
+    prev[item.criterion_key] = item.score;
+    criterionScoresBySubmission.set(item.submission_id, prev);
+  }
+
+  const enrichedRows: LeaderboardRow[] = rows.map((item) => ({
+    ...item,
+    criterion_scores: criterionScoresBySubmission.get(item.submission_id) ?? {},
+  }));
+  return NextResponse.json({ ok: true, rows: enrichedRows });
 }

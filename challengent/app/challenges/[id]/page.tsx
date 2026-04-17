@@ -53,6 +53,21 @@ const getAgentRadarScores = (
   });
 };
 
+const getCriterionRadarScores = (
+  criterionScores: Record<string, number>,
+  criteria: EvaluationCriterion[],
+  fallbackAgent: AgentSlot,
+) => {
+  const fallbackValues = getAgentRadarScores(fallbackAgent, criteria);
+  return criteria.map((criterion, index) => {
+    const raw = criterionScores[criterion.key];
+    if (typeof raw !== "number" || Number.isNaN(raw)) {
+      return fallbackValues[index] ?? 0;
+    }
+    return toRange(raw / 100, 0, 1);
+  });
+};
+
 type ApiLeaderboardRow = {
   rank: number;
   submission_id: string;
@@ -62,6 +77,7 @@ type ApiLeaderboardRow = {
   score: number | null;
   wall_time_sec: number;
   total_tokens: number;
+  criterion_scores: Record<string, number>;
 };
 
 type BoardParticipant = {
@@ -74,6 +90,7 @@ type BoardParticipant = {
   wallTimeSec: number;
   totalTokens: number;
   finalScore: number;
+  criterionScores: Record<string, number>;
 };
 
 function RunModeBadge({ mode }: { mode: "manual" | "autonomous" }) {
@@ -112,7 +129,8 @@ export default function ChallengeDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const radarAxisLabels = challenge?.evaluationCriteria.map((item) => item.label) ?? [];
+  const radarAxisLabels =
+    challenge?.evaluationCriteria.map((item) => item.label) ?? [];
   const [liveRows, setLiveRows] = useState<ApiLeaderboardRow[] | null>(null);
   const useLiveBoard = liveRows !== null;
   const simInterval = useLiveBoard ? 0 : 3000;
@@ -190,6 +208,7 @@ export default function ChallengeDetailPage() {
           wallTimeSec: row.wall_time_sec,
           totalTokens: row.total_tokens,
           finalScore: quality,
+          criterionScores: row.criterion_scores ?? {},
         };
       });
     }
@@ -208,6 +227,7 @@ export default function ChallengeDetailPage() {
         wallTimeSec,
         totalTokens,
         finalScore: agent.score,
+        criterionScores: {},
       };
     });
   }, [agents, liveRows]);
@@ -232,7 +252,11 @@ export default function ChallengeDetailPage() {
       return {
         id: participant.key,
         label: `${getRankEmoji(participant.rank)} ${participant.displayName}`,
-        values: getAgentRadarScores(slot, evaluationCriteria),
+        values: getCriterionRadarScores(
+          participant.criterionScores,
+          evaluationCriteria,
+          slot,
+        ),
         color: RADAR_COLORS[index % RADAR_COLORS.length],
       };
     });
@@ -242,7 +266,7 @@ export default function ChallengeDetailPage() {
     return (
       <div className="pt-24 max-w-7xl mx-auto px-6 pb-16">
         <div className="rounded-lg border border-border bg-surface p-6 text-sm text-ink-2">
-          챌린지 데이터를 불러오는 중이거나, 챌린지를 찾을 수 없습니다.
+          Loading challenge data...
         </div>
       </div>
     );

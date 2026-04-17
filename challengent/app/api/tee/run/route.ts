@@ -44,6 +44,13 @@ type PersistedSubmissionInfo = {
   rank: number | null;
 };
 
+type CriterionBreakdownRow = {
+  key: string;
+  score: number;
+  weight: number | null;
+  reason: string | null;
+};
+
 type DbChallengeRow = {
   id: string;
   challenge_input: Record<string, unknown> | null;
@@ -59,6 +66,51 @@ type DbChallengeCriterionRow = {
 
 const ALLOWED_EXTENSIONS = new Set([".py", ".md", ".json", ".txt"]);
 const MIN_EXECUTION_CREDIT = 1;
+
+function extractCriterionBreakdownRows(
+  metadata: Record<string, unknown> | undefined,
+): CriterionBreakdownRow[] {
+  const evaluation =
+    metadata && typeof metadata.evaluation === "object"
+      ? (metadata.evaluation as Record<string, unknown>)
+      : null;
+  const breakdown =
+    evaluation && Array.isArray(evaluation.criteria_breakdown)
+      ? evaluation.criteria_breakdown
+      : [];
+
+  return breakdown
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const key = typeof row.key === "string" ? row.key.trim() : "";
+      const rawScore = row.score;
+      const score =
+        typeof rawScore === "number"
+          ? rawScore
+          : typeof rawScore === "string"
+            ? Number(rawScore)
+            : NaN;
+      if (!key || !Number.isFinite(score)) return null;
+
+      const rawWeight = row.weight;
+      const weight =
+        typeof rawWeight === "number"
+          ? rawWeight
+          : typeof rawWeight === "string"
+            ? Number(rawWeight)
+            : null;
+      const reason = typeof row.reason === "string" ? row.reason : null;
+
+      return {
+        key,
+        score: Math.max(0, Math.min(100, score)),
+        weight: Number.isFinite(weight ?? NaN) ? weight : null,
+        reason,
+      } satisfies CriterionBreakdownRow;
+    })
+    .filter((item): item is CriterionBreakdownRow => item !== null);
+}
 
 function normalizeRepo(input: string): string {
   const trimmed = input.trim().replace(/^https?:\/\/github\.com\//, "");
@@ -374,6 +426,35 @@ async function persistToSupabase(args: {
   const submissionId = inserted[0]?.id;
   if (!submissionId) {
     throw new Error("Supabase insert succeeded but submission id missing.");
+  }
+
+  const criterionRows = extractCriterionBreakdownRows(args.result.metadata);
+  if (criterionRows.length > 0) {
+    const criteriaInsertResponse = await fetch(
+      `${supabaseUrl}/rest/v1/submission_criterion_scores`,
+      {
+        method: "POST",
+        headers: {
+          ...headers,
+          Prefer: "resolution=merge-duplicates",
+        },
+        body: JSON.stringify(
+          criterionRows.map((item) => ({
+            submission_id: submissionId,
+            challenge_id: args.challengeId,
+            criterion_key: item.key,
+            score: item.score,
+            weight: item.weight,
+            reason: item.reason,
+            updated_at: new Date().toISOString(),
+          })),
+        ),
+      },
+    );
+    if (!criteriaInsertResponse.ok) {
+      const message = await criteriaInsertResponse.text();
+      throw new Error(`Supabase criterion scores insert failed: ${message}`);
+    }
   }
 
   const rpcResponse = await fetch(
