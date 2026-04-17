@@ -12,6 +12,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 export const runtime = "nodejs";
 
 type TeeRunRequest = {
@@ -43,6 +45,7 @@ type PersistedSubmissionInfo = {
 };
 
 const ALLOWED_EXTENSIONS = new Set([".py", ".md", ".json", ".txt"]);
+const MIN_EXECUTION_CREDIT = 1;
 
 function normalizeRepo(input: string): string {
   const trimmed = input.trim().replace(/^https?:\/\/github\.com\//, "");
@@ -244,6 +247,7 @@ async function persistToSupabase(args: {
   challengeId: string;
   submitterId: string;
   principalType: "human" | "agent";
+  runMode: "manual" | "autonomous";
   source: "inline" | "github";
   executionMode: "near-ai-cloud" | "mock";
   result: TeeRunResponse;
@@ -272,6 +276,7 @@ async function persistToSupabase(args: {
       challenge_id: args.challengeId,
       submitter_id: args.submitterId,
       principal_type: args.principalType,
+      run_mode: args.runMode,
       source: args.source,
       execution_mode: args.executionMode,
       status: args.result.status,
@@ -324,13 +329,96 @@ async function persistToSupabase(args: {
   return { submissionId, rank };
 }
 
+function calculateCreditCost(result: TeeRunResponse): number {
+  const totalTokens = Number(result.token_usage?.total_tokens ?? 0);
+  return Math.max(1, Math.round(totalTokens / 1000));
+}
+
+async function consumeCredits(args: {
+  userId: string;
+  amount: number;
+}): Promise<number> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("Supabase server configuration is missing.");
+  }
+
+  const headers = {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_user_credits`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      target_user_id: args.userId,
+      amount: args.amount,
+    }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    if (message.includes("Insufficient credits")) {
+      throw new Error("크레딧이 부족합니다. 충전 후 다시 시도해 주세요.");
+    }
+    throw new Error(`Failed to consume credits: ${message}`);
+  }
+
+  const remaining = (await response.json()) as number;
+  return remaining;
+}
+
+async function ensureCredits(userId: string): Promise<number> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("Supabase server configuration is missing.");
+  }
+
+  const headers = {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const ensureResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/ensure_user_credits`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ target_user_id: userId }),
+  });
+  if (!ensureResponse.ok) {
+    const message = await ensureResponse.text();
+    throw new Error(`Failed to initialize credits: ${message}`);
+  }
+
+  const remaining = (await ensureResponse.json()) as number;
+  return remaining;
+}
+
 export async function POST(request: Request) {
+  const configuredAgentApiKey = process.env.AGENT_EXECUTION_API_KEY?.trim();
+  const agentApiKeyFromHeader =
+    request.headers.get("x-agent-api-key")?.trim() ||
+    (() => {
+      const authorization = request.headers.get("authorization")?.trim();
+      if (!authorization?.toLowerCase().startsWith("bearer ")) return undefined;
+      return authorization.slice(7).trim();
+    })();
+  const isAgentApiExecution =
+    Boolean(configuredAgentApiKey) &&
+    agentApiKeyFromHeader === configuredAgentApiKey;
+  const runMode: "manual" | "autonomous" = isAgentApiExecution
+    ? "autonomous"
+    : "manual";
+
   const body = (await request.json()) as TeeRunRequest;
   const baseGuide = body.baseGuide?.trim();
   const source = body.source ?? "inline";
   const challengeId = body.challengeId?.trim() || "unknown-challenge";
-  const submitterId = body.submitterId?.trim() || "anonymous";
-  const requestedPrincipal = body.principalType;
+  const requestedPrincipal = isAgentApiExecution ? "agent" : body.principalType;
   const principalType: "human" | "agent" =
     requestedPrincipal === "human" || requestedPrincipal === "agent"
       ? requestedPrincipal
@@ -343,6 +431,47 @@ export async function POST(request: Request) {
       { ok: false, error: "baseGuide is required." },
       { status: 400 },
     );
+  }
+
+  let submitterId: string;
+  let authUserId: string | null = null;
+  if (isAgentApiExecution) {
+    submitterId = body.submitterId?.trim() || "agent-api";
+  } else {
+    try {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "로그인이 필요합니다. GitHub로 로그인한 뒤 다시 제출해 주세요.",
+          },
+          { status: 401 },
+        );
+      }
+      const meta = user.user_metadata as Record<string, unknown> | undefined;
+      const userName =
+        typeof meta?.user_name === "string" ? meta.user_name : undefined;
+      const preferred =
+        typeof meta?.preferred_username === "string"
+          ? meta.preferred_username
+          : undefined;
+      authUserId = user.id;
+      submitterId = userName || preferred || user.id;
+    } catch {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Supabase 인증이 설정되지 않았습니다. NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY를 확인하세요.",
+        },
+        { status: 503 },
+      );
+    }
   }
 
   const appRoot = process.cwd();
@@ -361,6 +490,20 @@ export async function POST(request: Request) {
   let tempRoot = "";
 
   try {
+    if (!isAgentApiExecution && authUserId) {
+      const currentCredits = await ensureCredits(authUserId);
+      if (currentCredits < MIN_EXECUTION_CREDIT) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "크레딧이 부족합니다. 충전 후 다시 시도해 주세요.",
+            credits: currentCredits,
+          },
+          { status: 402 },
+        );
+      }
+    }
+
     if (!hasNearApiKey && !allowMockExecution) {
       return NextResponse.json(
         {
@@ -409,10 +552,19 @@ export async function POST(request: Request) {
       challengePath,
       useMockClient,
     });
+    const usedCredits = isAgentApiExecution ? 0 : calculateCreditCost(result);
+    const remainingCredits =
+      !isAgentApiExecution && authUserId
+        ? await consumeCredits({
+            userId: authUserId,
+            amount: usedCredits,
+          })
+        : null;
     const persisted = await persistToSupabase({
       challengeId,
       submitterId,
       principalType,
+      runMode,
       source,
       executionMode,
       result,
@@ -426,12 +578,18 @@ export async function POST(request: Request) {
       mockMode: useMockClient,
       executionMode,
       source,
+      runMode,
       submissionId: persisted?.submissionId ?? null,
       rank: persisted?.rank ?? null,
+      usedCredits,
+      remainingCredits,
     });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown submission error";
+    if (message.includes("크레딧이 부족합니다")) {
+      return NextResponse.json({ ok: false, error: message }, { status: 402 });
+    }
     return NextResponse.json(
       { ok: false, error: message },
       { status: 500 },

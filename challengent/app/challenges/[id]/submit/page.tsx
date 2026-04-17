@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { mockChallenges } from "@/lib/mock-data";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ArenaButton } from "@/components/ui/ArenaButton";
 import { ArenaBadge } from "@/components/ui/ArenaBadge";
 import { StatBar } from "@/components/ui/StatBar";
 import { OnChainBadge } from "@/components/ui/OnChainBadge";
 import { Challenge } from "@/lib/types";
+import { Rotate3D, RotateCcw } from "lucide-react";
 
 type Phase = "submit" | "running" | "result";
 
@@ -80,18 +83,19 @@ ${challenge.inputOutputSpec}
 
 export default function SubmitPage() {
   const params = useParams();
+  const pathname = usePathname();
   const id = params.id as string;
   const challenge =
     mockChallenges.find((c) => c.id === id) || mockChallenges[0];
   const challengeGuide = buildDefaultBaseGuide(challenge);
 
-  const [phase, setPhase] = useState<Phase>("submit");
+  const [phase, setPhase] = useState<Phase>("running");
   const [baseGuide, setBaseGuide] = useState(challengeGuide);
   const [submissionSource, setSubmissionSource] =
     useState<SubmissionSource>("github");
   const [githubRepo, setGithubRepo] = useState("9oodam/agent-set-1");
   const [githubRef, setGithubRef] = useState("main");
-  const [githubPackagePath, setGithubPackagePath] = useState(".");
+  const [githubPackagePath, setGithubPackagePath] = useState("/");
   const [monitorSummary, setMonitorSummary] = useState<string | null>(null);
   const [lastControlSignal, setLastControlSignal] =
     useState<ControlSignal | null>(null);
@@ -107,6 +111,59 @@ export default function SubmitPage() {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authConfigError, setAuthConfigError] = useState(false);
+  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
+
+  const fetchMyCredits = async () => {
+    const creditResponse = await fetch("/api/credits/me", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!creditResponse.ok) return;
+    const creditData = (await creditResponse.json()) as {
+      credits?: number;
+    };
+    setRemainingCredits(
+      typeof creditData.credits === "number" ? creditData.credits : null,
+    );
+  };
+
+  useEffect(() => {
+    let subscription: { unsubscribe: () => void } | undefined;
+    (async () => {
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setAuthUser(user);
+        if (user) {
+          await fetchMyCredits();
+        } else {
+          setRemainingCredits(null);
+        }
+        const {
+          data: { subscription: sub },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+          setAuthUser(session?.user ?? null);
+          if (session?.user) {
+            void fetchMyCredits();
+          } else {
+            setRemainingCredits(null);
+          }
+        });
+        subscription = sub;
+      } catch {
+        setAuthConfigError(true);
+        setAuthUser(null);
+      } finally {
+        setAuthChecked(true);
+      }
+    })();
+    return () => subscription?.unsubscribe();
+  }, []);
 
   useEffect(() => {
     setBaseGuide(challengeGuide);
@@ -129,6 +186,20 @@ export default function SubmitPage() {
   };
 
   const handleStart = async () => {
+    if (!authChecked) return;
+    if (authConfigError) {
+      setRunError(
+        "Supabase 클라이언트 설정이 없습니다. NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY를 확인하세요.",
+      );
+      return;
+    }
+    if (!authUser) {
+      setRunError(
+        "로그인이 필요합니다. 상단에서 GitHub로 로그인한 뒤 다시 시도해 주세요.",
+      );
+      return;
+    }
+
     const controller = new AbortController();
     abortRef.current = controller;
     setMonitorSummary(null);
@@ -150,9 +221,9 @@ export default function SubmitPage() {
       const response = await fetch("/api/tee/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           challengeId: id,
-          submitterId: "demo-user",
           principalType: submissionSource === "github" ? "agent" : "human",
           baseGuide,
           source: submissionSource,
@@ -180,6 +251,9 @@ export default function SubmitPage() {
       );
       setSubmissionId((data.submissionId as string | null | undefined) ?? null);
       setCurrentRank((data.rank as number | null | undefined) ?? null);
+      if (typeof data.remainingCredits === "number") {
+        setRemainingCredits(data.remainingCredits);
+      }
       setOutputViewMode("text");
       addRuntimeEvent(
         `Execution finished · status=${result.status} · wall=${result.wall_time_sec.toFixed(2)}s`,
@@ -241,7 +315,7 @@ export default function SubmitPage() {
   });
   const outputPreview =
     typeof runResult?.output === "string"
-      ? runResult.output.slice(0, 800)
+      ? runResult.output.slice(0, 1200)
       : JSON.stringify(runResult?.output ?? {}, null, 2);
   const htmlOutput =
     typeof runResult?.output === "string" ? runResult.output : null;
@@ -282,6 +356,43 @@ export default function SubmitPage() {
       {/* Step 1: Submit */}
       {phase === "submit" && (
         <div className="space-y-8">
+          {authChecked && authConfigError && (
+            <div className="rounded-lg border border-red/30 bg-red/5 p-4 text-sm text-red">
+              Supabase 인증 환경변수가 없거나 잘못되었습니다.{" "}
+              <code className="text-xs">NEXT_PUBLIC_SUPABASE_URL</code>,{" "}
+              <code className="text-xs">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>를
+              설정하세요.
+            </div>
+          )}
+          {authChecked && !authConfigError && !authUser && (
+            <div className="rounded-lg border border-border bg-surface p-4 text-sm text-ink-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span>
+                제출과 랭킹 기록을 연결하려면 GitHub로 로그인해야 합니다.
+              </span>
+              <Link href={`/auth/login?next=${encodeURIComponent(pathname)}`}>
+                <ArenaButton variant="red" size="sm" type="button">
+                  GitHub 로그인
+                </ArenaButton>
+              </Link>
+            </div>
+          )}
+          {authChecked && authUser && (
+            <div className="rounded-lg border border-border bg-surface p-3 text-sm text-ink-2">
+              로그인:{" "}
+              <span className="font-medium text-ink">
+                {(authUser.user_metadata as { user_name?: string })
+                  ?.user_name ||
+                  authUser.email ||
+                  authUser.id}
+              </span>
+              <span className="ml-3 text-ink-3">
+                잔여 크레딧:{" "}
+                <span className="text-ink font-semibold">
+                  {remainingCredits ?? "—"}
+                </span>
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <div className="w-8 h-[2px] bg-red" />
             <span className="font-label uppercase tracking-[0.2em] text-xs text-ink-2">
@@ -424,7 +535,7 @@ export default function SubmitPage() {
               {baseGuide.trim().length > 0 ? "ready" : "empty"}
             </div>
             <ArenaBadge color="bg-green/10 text-green">
-              Balance: 150 credits ✓
+              Balance: {remainingCredits ?? "—"} credits
             </ArenaBadge>
           </div>
 
@@ -432,14 +543,21 @@ export default function SubmitPage() {
             variant="red"
             size="lg"
             className="w-full"
-            onClick={handleStart}
+            onClick={() => void handleStart()}
             disabled={
+              !authChecked ||
+              authConfigError ||
+              !authUser ||
               !baseGuide.trim() ||
               (submissionSource === "github" &&
                 (!githubRepo.trim() || !githubPackagePath.trim()))
             }
           >
-            Enter Arena 🥊
+            {!authChecked
+              ? "세션 확인 중…"
+              : !authUser
+                ? "로그인 후 제출"
+                : "Enter Arena 🥊"}
           </ArenaButton>
           {runError && (
             <div className="rounded-lg border border-red/30 bg-red/5 p-4 text-sm text-red">
@@ -458,7 +576,7 @@ export default function SubmitPage() {
               <span className="font-label uppercase tracking-wider text-sm font-semibold">
                 Running (TEE connected)
               </span>
-              <span className="font-mono text-sm text-ink-2">
+              <span className="font-mono text-sm text-green-600">
                 Elapsed: {elapsedSec}s
               </span>
             </div>
@@ -479,21 +597,29 @@ export default function SubmitPage() {
 
               <div className="lg:w-64 space-y-4 shrink-0">
                 <div className="bg-surface border border-border rounded-lg p-4 space-y-4">
-                  <div className="font-label uppercase tracking-wider text-xs text-ink-2">
+                  <div className="font-label uppercase tracking-wider text-sm text-ink-2">
                     Runtime Status
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>backend</span>
-                      <span>✅ request sent</span>
+                      <span>request sent ✅</span>
                     </div>
                     <div className="flex justify-between">
                       <span>tee-engine</span>
-                      <span>🔄 running</span>
+                      <span>
+                        running{" "}
+                        <span
+                          className="animate-spin inline-block align-middle"
+                          style={{ animationDuration: "1s" }}
+                        >
+                          <RotateCcw size={16} />
+                        </span>
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>result</span>
-                      <span>⏳ pending</span>
+                      <span>pending ⏳</span>
                     </div>
                   </div>
                   <div className="border-t border-border pt-3 space-y-1 text-xs text-ink-2">

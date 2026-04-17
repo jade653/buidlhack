@@ -7,6 +7,7 @@ type LeaderboardRow = {
   submission_id: string;
   submitter_id: string;
   principal_type: "human" | "agent";
+  run_mode: "manual" | "autonomous";
   score: number | null;
   wall_time_sec: number;
   total_tokens: number;
@@ -40,7 +41,7 @@ export async function GET(
   url.searchParams.set("challenge_id", `eq.${challengeId}`);
   url.searchParams.set(
     "select",
-    "rank,submission_id,submitter_id,principal_type,score,wall_time_sec,total_tokens",
+    "rank,submission_id,submitter_id,principal_type,run_mode,score,wall_time_sec,total_tokens",
   );
   url.searchParams.set("order", "rank.asc");
 

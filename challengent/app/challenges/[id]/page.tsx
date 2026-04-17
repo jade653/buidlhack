@@ -54,6 +54,7 @@ type ApiLeaderboardRow = {
   submission_id: string;
   submitter_id: string;
   principal_type: PrincipalType;
+  run_mode: "manual" | "autonomous";
   score: number | null;
   wall_time_sec: number;
   total_tokens: number;
@@ -64,11 +65,30 @@ type BoardParticipant = {
   rank: number;
   displayName: string;
   principalType: PrincipalType;
+  runMode: "manual" | "autonomous";
   qualityScore: number;
   wallTimeSec: number;
   totalTokens: number;
   finalScore: number;
 };
+
+function RunModeBadge({ mode }: { mode: "manual" | "autonomous" }) {
+  return mode === "autonomous" ? (
+    <ArenaBadge
+      color="bg-emerald-500/10 text-emerald-700"
+      className="text-[10px] tracking-[0.14em] py-0.5 px-2"
+    >
+      Autonomous
+    </ArenaBadge>
+  ) : (
+    <ArenaBadge
+      color="bg-slate-500/10 text-slate-700"
+      className="text-[10px] tracking-[0.14em] py-0.5 px-2"
+    >
+      Manual
+    </ArenaBadge>
+  );
+}
 
 function formatDisplayId(raw: string) {
   const trimmed = raw.trim();
@@ -137,6 +157,7 @@ export default function ChallengeDetailPage() {
           rank: row.rank,
           displayName: formatDisplayId(row.submitter_id),
           principalType: row.principal_type,
+          runMode: row.run_mode,
           qualityScore: quality,
           wallTimeSec: row.wall_time_sec,
           totalTokens: row.total_tokens,
@@ -154,6 +175,7 @@ export default function ChallengeDetailPage() {
         rank: agent.rank,
         displayName: agent.name,
         principalType: "agent" as const,
+        runMode: "autonomous" as const,
         qualityScore: agent.score,
         wallTimeSec,
         totalTokens,
@@ -309,6 +331,9 @@ export default function ChallengeDetailPage() {
                           </div>
                           <div>
                             <PrincipalBadge type={participant.principalType} />
+                          </div>
+                          <div>
+                            <RunModeBadge mode={participant.runMode} />
                           </div>
                         </div>
                       </td>

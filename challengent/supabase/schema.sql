@@ -2,11 +2,92 @@
 
 create extension if not exists pgcrypto;
 
+create table if not exists public.user_credits (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  credits integer not null default 50 check (credits >= 0),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.ensure_user_credits(target_user_id uuid)
+returns integer
+language plpgsql
+security definer
+as $$
+declare
+  current_credits integer;
+begin
+  insert into public.user_credits (user_id)
+  values (target_user_id)
+  on conflict (user_id) do nothing;
+
+  select credits
+  into current_credits
+  from public.user_credits
+  where user_id = target_user_id;
+
+  return coalesce(current_credits, 0);
+end;
+$$;
+
+create or replace function public.consume_user_credits(
+  target_user_id uuid,
+  amount integer
+)
+returns integer
+language plpgsql
+security definer
+as $$
+declare
+  remaining integer;
+begin
+  if amount <= 0 then
+    raise exception 'Credit amount must be positive';
+  end if;
+
+  perform public.ensure_user_credits(target_user_id);
+
+  update public.user_credits
+  set
+    credits = credits - amount,
+    updated_at = now()
+  where user_id = target_user_id
+    and credits >= amount
+  returning credits into remaining;
+
+  if remaining is null then
+    raise exception 'Insufficient credits';
+  end if;
+
+  return remaining;
+end;
+$$;
+
+create or replace function public.seed_credits_for_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.user_credits (user_id, credits)
+  values (new.id, 50)
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created_seed_credits on auth.users;
+create trigger on_auth_user_created_seed_credits
+  after insert on auth.users
+  for each row execute procedure public.seed_credits_for_new_user();
+
 create table if not exists public.submissions (
   id uuid primary key default gen_random_uuid(),
   challenge_id text not null,
   submitter_id text not null,
   principal_type text not null check (principal_type in ('human', 'agent')),
+  run_mode text not null check (run_mode in ('manual', 'autonomous')),
   source text not null check (source in ('inline', 'github')),
   execution_mode text not null check (execution_mode in ('near-ai-cloud', 'mock')),
   status text not null check (status in ('success', 'error', 'timeout')),
@@ -30,6 +111,7 @@ create table if not exists public.leaderboard_entries (
   submission_id uuid not null references public.submissions(id) on delete cascade,
   submitter_id text not null,
   principal_type text not null check (principal_type in ('human', 'agent')),
+  run_mode text not null check (run_mode in ('manual', 'autonomous')),
   score double precision,
   wall_time_sec double precision not null default 0,
   total_tokens integer not null default 0,
@@ -52,6 +134,7 @@ begin
     submission_id,
     submitter_id,
     principal_type,
+    run_mode,
     score,
     wall_time_sec,
     total_tokens,
@@ -63,6 +146,7 @@ begin
     s.id,
     s.submitter_id,
     s.principal_type,
+    s.run_mode,
     s.score,
     s.wall_time_sec,
     s.total_tokens,
@@ -78,6 +162,7 @@ end;
 $$;
 
 -- Optional RLS skeleton (customize before enabling in production):
+-- alter table public.user_credits enable row level security;
 -- alter table public.submissions enable row level security;
 -- alter table public.leaderboard_entries enable row level security;
 
@@ -88,5 +173,11 @@ $$;
 -- alter table public.leaderboard_entries
 --   add column if not exists principal_type text not null default 'human'
 --     check (principal_type in ('human', 'agent'));
+-- alter table public.submissions
+--   add column if not exists run_mode text not null default 'manual'
+--     check (run_mode in ('manual', 'autonomous'));
+-- alter table public.leaderboard_entries
+--   add column if not exists run_mode text not null default 'manual'
+--     check (run_mode in ('manual', 'autonomous'));
 -- Note: Postgres may reject combining DEFAULT + CHECK in one ADD COLUMN on some versions;
 -- if so, split into: add column nullable -> backfill -> set not null -> add check.
