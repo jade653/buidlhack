@@ -1,0 +1,10 @@
+{
+  "model": "anthropic/claude-sonnet-4-5",
+  "temperature": 0.3,
+  "max_tokens": 4096,
+  "role_models": {
+    "copywriter": "anthropic/claude-sonnet-4-5",
+    "designer":   "anthropic/claude-sonnet-4-5",
+    "reviewer":   "anthropic/claude-sonnet-4-5"
+  }
+}

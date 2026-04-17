@@ -1,86 +1,86 @@
-# 사이트 제작 의뢰서
+# Website Design Brief
 
-> 이 문서는 사이트 제작을 의뢰하는 분이 직접 작성하는 브리핑 파일입니다.
-> 각 항목을 최대한 구체적으로 채워주시면 AI 에이전트가 더 정확한 결과물을 생성합니다.
-
----
-
-## 브랜드 정보
-
-**브랜드명:** Grain & Ground  
-**슬로건:** Every cup has a story.  
-**업종:** 스페셜티 커피 카페  
-**운영 형태:** 오프라인 매장 1곳 + 온라인 원두 판매  
-**매장 위치:** 서울시 성동구 성수동 (골목 안 독립 매장)  
-**설립 연도:** 2021  
-
-**브랜드 소개:**  
-성수동 골목 안에 자리한 스페셜티 커피 카페입니다. "좋은 커피는 산지에서 시작된다"는 철학 아래, 직접 생두를 소싱하고 소량 로스팅합니다. 산지별 원두의 개성을 살린 핸드드립과 에스프레소 베이스 음료를 제공하며, 커피를 통해 생산자와 소비자를 연결하는 경험을 지향합니다.
+> This document is filled out directly by the person commissioning the site.
+> The more specific each section, the more accurate the output the AI agent will generate.
 
 ---
 
-## 타겟 고객층
+## Brand Information
 
-**주요 타겟:** 25–40세 직장인 및 카페 투어 마니아  
-**특징:** 커피 품질과 브랜드 철학을 중시하며, SNS 공유 빈도가 높음. 원두 구매 경험이 있거나 홈카페에 관심 있는 층.
+**Brand Name:** Grain & Ground  
+**Slogan:** Every cup has a story.  
+**Industry:** Specialty coffee cafe  
+**Business Type:** One physical location + online coffee bean sales  
+**Location:** Seongsu-dong, Seongdong-gu, Seoul (independent shop tucked in a side street)  
+**Founded:** 2021  
 
----
-
-## 메뉴 라인업
-
-**대표 메뉴:**
-- 시그니처 핸드드립 (에티오피아 예가체프) — 7,500원
-- 콜드브루 토닉 — 8,000원
-- 카페 라떼 (자체 블렌드) — 6,500원
-- 시즌 음료 (분기별 변경) — 8,500원 내외
-
-**원두 / 굿즈 판매:**
-- 자체 로스팅 원두 (100g / 200g) — 12,000원 ~ 18,000원
-- 드립백 세트 (5개입) — 15,000원
-- 브랜드 텀블러 (단색, 두 가지 사이즈) — 32,000원
+**Brand Description:**  
+A specialty coffee cafe nestled in the alleys of Seongsu-dong. Under the philosophy that "great coffee starts at origin," we source green beans directly and roast in small batches. We offer hand-drip and espresso-based drinks that highlight the character of each origin, aiming to connect producers and consumers through every cup.
 
 ---
 
-## 디자인 방향
+## Target Audience
 
-**키워드:** 미니멀, 따뜻함, 정직함, 장인정신  
-
-**색상 팔레트:**
-- 메인: 오프화이트 (#F5F0EB), 딥 브라운 (#3B2314)
-- 포인트: 더스티 테라코타 (#C07A5A)
-
-**무드:**  
-커피 본연의 색감에서 영감을 받은 따뜻한 중성 톤. 지나치게 트렌디하지 않고 5년 뒤에도 촌스럽지 않을 타임리스한 느낌을 원합니다. 사진보다는 여백과 타이포그래피가 살아있는 레이아웃을 선호합니다.
-
-**레퍼런스:**  
-Blue Bottle Coffee 웹사이트의 간결함과 구조감 — 단, 더 따뜻하고 덜 차갑게.
+**Primary Target:** Working professionals and cafe-hopping enthusiasts aged 25–40  
+**Profile:** Value coffee quality and brand philosophy; highly active on social media. Likely have experience buying coffee beans or an interest in home brewing.
 
 ---
 
-## 원하는 페이지 구성
+## Menu Lineup
 
-**페이지 형태:** 단일 스크롤 랜딩 페이지 (멀티 페이지 불필요)  
+**Signature Menu:**
+- Signature Hand Drip (Ethiopia Yirgacheffe) — ₩7,500
+- Cold Brew Tonic — ₩8,000
+- Cafe Latte (house blend) — ₩6,500
+- Seasonal Drink (rotates quarterly) — approx. ₩8,500
 
-**필수 섹션 (순서대로):**
-1. 히어로 — 브랜드명, 슬로건, 핵심 이미지 또는 배경
-2. 브랜드 스토리 — 짧은 소개 문단 (3–4줄 이내)
-3. 메뉴 소개 — 대표 메뉴 3–4개 카드형 나열
-4. 원두 & 굿즈 — 구매 유도 섹션 (외부 스토어 링크 연결)
-5. 매장 정보 — 주소, 영업시간, 오시는 길 (지도 링크)
-6. 푸터 — SNS 링크, 이메일 문의
-
-**선택 섹션:**
-- 인스타그램 피드 연동 (가능하면 포함)
+**Beans & Goods:**
+- House-roasted beans (100g / 200g) — ₩12,000–₩18,000
+- Drip bag set (5-pack) — ₩15,000
+- Brand tumbler (solid color, two sizes) — ₩32,000
 
 ---
 
-## 특별 요청사항
+## Design Direction
 
-**언어:** 한국어 기본, 메뉴명과 섹션 제목에 영어 병기  
-**애니메이션:** 스크롤 시 요소 페이드인 정도. 과하지 않게.  
-**반응형:** 모바일 우선 (데스크탑도 지원)  
+**Keywords:** Minimal, warmth, honesty, craftsmanship  
 
-**기타:**
-- 온라인 원두 주문은 외부 스마트스토어 링크 연결 (자체 결제 시스템 불필요)
-- 카페 내부 사진은 추후 제공 예정 — 우선 AI 생성 이미지 또는 플레이스홀더 사용 가능
-- 추후 온라인 예약 기능 추가 가능성 있으나 현재는 불필요
+**Color Palette:**
+- Main: Off-white (#F5F0EB), Deep Brown (#3B2314)
+- Accent: Dusty Terracotta (#C07A5A)
+
+**Mood:**  
+Warm, neutral tones inspired by the natural colors of coffee. Timeless — not overly trendy, not something that will feel dated in five years. Prefer layouts led by whitespace and typography over photo-heavy design.
+
+**Reference:**  
+The clarity and structure of the Blue Bottle Coffee website — but warmer and less cold.
+
+---
+
+## Page Structure
+
+**Page Type:** Single-scroll landing page (no multi-page setup needed)  
+
+**Required Sections (in order):**
+1. Hero — brand name, slogan, key visual or background
+2. Brand Story — short introductory paragraph (3–4 lines)
+3. Menu — 3–4 signature items displayed as cards
+4. Beans & Goods — purchase CTA section (linked to external store)
+5. Store Info — address, hours, directions (map link)
+6. Footer — social media links, email contact
+
+**Optional Section:**
+- Instagram feed integration (include if feasible)
+
+---
+
+## Special Requirements
+
+**Language:** English  
+**Animation:** Subtle fade-in on scroll. Nothing excessive.  
+**Responsive:** Mobile-first (desktop also supported)  
+
+**Other:**
+- Online bean orders link to an external smart store (no in-house payment system needed)
+- Interior photos to be provided later — AI-generated images or placeholders are fine for now
+- Online reservation feature may be added in the future, but not needed at this stage

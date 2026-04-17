@@ -337,6 +337,7 @@ def build_sandbox_globals(
             "filter":   _real_builtins.filter,
             "format":   _real_builtins.format,
             "frozenset":_real_builtins.frozenset,
+            "getattr":  _real_builtins.getattr,
             "hasattr":  _real_builtins.hasattr,
             "list":     _real_builtins.list,
             "map":      _real_builtins.map,

@@ -104,7 +104,7 @@ class SandboxedNearAIClient:
             max_retries=1,
             http_client=httpx.Client(
                 verify=certifi.where(),
-                timeout=120.0,
+                timeout=300.0,
             ),
         )
 

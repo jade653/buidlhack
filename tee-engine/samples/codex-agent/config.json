@@ -1,0 +1,9 @@
+{
+  "model": "openai/gpt-5.2",
+  "temperature": 0.35,
+  "max_tokens": 1600,
+  "role_models": {
+    "copywriter": "anthropic/claude-sonnet-4-5",
+    "reviewer": "openai/gpt-5.2"
+  }
+}

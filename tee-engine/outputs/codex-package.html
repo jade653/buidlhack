@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grain &amp; Ground – Specialty Coffee in Seongsu-dong, Seoul</title>
+  <meta name="description" content="A specialty coffee cafe in Seongsu-dong, Seoul. Direct-sourced beans, small-batch roasting, and hand-drip and espresso drinks-made with care." />
+  <meta name="theme-color" content="#C07A5A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F5F0EB;
+      --ink: #3B2314;
+      --accent: #C07A5A;
+      --accent-rgb: 192, 122, 90;
+      --ink-rgb: 59, 35, 20;
+      --paper: rgba(255, 252, 249, 0.72);
+      --panel: rgba(255, 249, 244, 0.8);
+      --line: rgba(59, 35, 20, 0.12);
+      --shadow: 0 24px 60px rgba(59, 35, 20, 0.10);
+      --radius-lg: 28px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(192, 122, 90, 0.14), transparent 34%),
+        radial-gradient(circle at 85% 15%, rgba(59, 35, 20, 0.05), transparent 26%),
+        linear-gradient(180deg, #fbf7f2 0%, var(--bg) 42%, #f2ece6 100%);
+      color: var(--ink);
+      font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+      line-height: 1.55;
+      min-width: 320px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(rgba(59, 35, 20, 0.06) 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+      opacity: 0.16;
+      mix-blend-mode: multiply;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    .page-shell {
+      position: relative;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px 20px 36px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 0 26px;
+    }
+
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+
+    .brand-lockup strong {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: rgba(59, 35, 20, 0.92);
+      color: var(--bg);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1.15rem;
+      letter-spacing: 0;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 18px;
+      font-size: 0.94rem;
+    }
+
+    .nav-links a:last-child {
+      padding: 10px 14px;
+      border: 1px solid rgba(59, 35, 20, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.48);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      position: relative;
+      padding: 8px 0 36px;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+      color: rgba(59, 35, 20, 0.76);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: rgba(59, 35, 20, 0.34);
+    }
+
+    .brand-name {
+      margin: 0;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(3.2rem, 12vw, 7rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+    }
+
+    .slogan {
+      margin: 10px 0 0;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(1.35rem, 4vw, 2.3rem);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      max-width: 11ch;
+    }
+
+    .hero-body {
+      max-width: 34rem;
+      margin: 24px 0 0;
+      font-size: 1.02rem;
+      color: rgba(59, 35, 20, 0.82);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      font-size: 0.96rem;
+      transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      background: var(--ink);
+      color: var(--bg);
+      box-shadow: 0 18px 30px rgba(59, 35, 20, 0.16);
+    }
+
+    .button.secondary {
+      background: rgba(255, 255, 255, 0.52);
+      color: var(--ink);
+      border-color: rgba(59, 35, 20, 0.12);
+      backdrop-filter: blur(12px);
+    }
+
+    .fact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      list-style: none;
+      padding: 0;
+      margin: 28px 0 0;
+    }
+
+    .fact-row li,
+    .pill {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid rgba(59, 35, 20, 0.10);
+      font-size: 0.84rem;
+      color: rgba(59, 35, 20, 0.74);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-art {
+      position: relative;
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+    }
+
+    .hero-orb {
+      position: absolute;
+      width: 82%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.92), transparent 42%),
+        linear-gradient(140deg, rgba(192, 122, 90, 0.34), rgba(59, 35, 20, 0.14));
+      filter: blur(0.3px);
+      opacity: 0.96;
+    }
+
+    .floating-card {
+      position: absolute;
+      width: min(72vw, 280px);
+      border-radius: 32px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 249, 243, 0.62));
+      border: 1px solid rgba(59, 35, 20, 0.10);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(18px);
+    }
+
+    .floating-card.primary-card {
+      transform: translateY(-4px);
+      z-index: 3;
+    }
+
+    .floating-card.tilt-left {
+      transform: translate(-26%, -12%) rotate(-9deg);
+      z-index: 2;
+    }
+
+    .floating-card.tilt-right {
+      transform: translate(24%, 14%) rotate(8deg);
+      z-index: 1;
+    }
+
+    main {
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      position: relative;
+      padding: 30px 0;
+    }
+
+    .section-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 249, 243, 0.68));
+      border: 1px solid rgba(59, 35, 20, 0.09);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: 0 14px 40px rgba(59, 35, 20, 0.06);
+      backdrop-filter: blur(14px);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: rgba(59, 35, 20, 0.62);
+    }
+
+    .section-head span {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(59, 35, 20, 0.18), transparent);
+    }
+
+    .story-grid,
+    .beans-grid,
+    .store-grid,
+    .footer-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .story-copy h2,
+    .beans-copy h2,
+    .store-copy h2,
+    .feed-copy h2 {
+      margin: 0 0 10px;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(2.1rem, 4vw, 3.2rem);
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+      max-width: 11ch;
+    }
+
+    .story-copy p,
+    .beans-copy p,
+    .store-copy p,
+    .feed-copy p {
+      margin: 0;
+      color: rgba(59, 35, 20, 0.8);
+      max-width: 38rem;
+    }
+
+    .story-aside,
+    .store-panel,
+    .goods-panel {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.44);
+      border: 1px solid rgba(59, 35, 20, 0.08);
+    }
+
+    .story-aside strong,
+    .store-panel strong {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(59, 35, 20, 0.6);
+    }
+
+    .story-aside p,
+    .store-panel p {
+      margin: 0;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .menu-intro {
+      max-width: 40rem;
+      margin: 0 0 20px;
+      color: rgba(59, 35, 20, 0.8);
+    }
+
+    .menu-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .menu-card {
+      display: grid;
+      gap: 18px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.54);
+      border: 1px solid rgba(59, 35, 20, 0.08);
+      box-shadow: 0 12px 26px rgba(59, 35, 20, 0.05);
+    }
+
+    .card-visual {
+      padding: 18px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.76), transparent 44%),
+        linear-gradient(180deg, rgba(192, 122, 90, 0.14), rgba(59, 35, 20, 0.05));
+    }
+
+    .card-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .card-copy h3 {
+      margin: 0;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 2rem;
+      line-height: 0.98;
+      letter-spacing: -0.02em;
+    }
+
+    .card-copy p,
+    .card-meta {
+      margin: 0;
+      color: rgba(59, 35, 20, 0.75);
+    }
+
+    .card-meta {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 800;
+    }
+
+    .card-price {
+      justify-self: start;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(59, 35, 20, 0.92);
+      color: var(--bg);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .beans-grid {
+      gap: 18px;
+    }
+
+    .beans-copy ul {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .beans-copy li {
+      position: relative;
+      padding-left: 18px;
+      color: rgba(59, 35, 20, 0.8);
+    }
+
+    .beans-copy li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.6em;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(192, 122, 90, 0.9);
+    }
+
+    .goods-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-top: 1px solid rgba(59, 35, 20, 0.08);
+    }
+
+    .goods-row:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .goods-row div {
+      display: grid;
+      gap: 4px;
+    }
+
+    .goods-row span,
+    .goods-row em {
+      color: rgba(59, 35, 20, 0.72);
+      font-style: normal;
+    }
+
+    .store-grid {
+      gap: 18px;
+    }
+
+    .store-panel a {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .feed-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .feed-tile {
+      min-height: 140px;
+      display: flex;
+      align-items: flex-end;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(59, 35, 20, 0.08);
+      background:
+        linear-gradient(160deg, rgba(192, 122, 90, 0.22), rgba(255, 255, 255, 0.42)),
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.82), transparent 34%),
+        rgba(255, 249, 243, 0.64);
+      box-shadow: 0 10px 24px rgba(59, 35, 20, 0.05);
+    }
+
+    .feed-tile span {
+      display: inline-flex;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(59, 35, 20, 0.08);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    footer {
+      padding: 16px 0 8px;
+    }
+
+    .footer-grid {
+      gap: 20px;
+      align-items: end;
+      border-top: 1px solid rgba(59, 35, 20, 0.10);
+      padding-top: 18px;
+    }
+
+    .footer-brand strong {
+      display: block;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 2rem;
+      line-height: 0.96;
+      margin-bottom: 6px;
+    }
+
+    .footer-brand p,
+    .footer-links a,
+    .footer-note {
+      margin: 0;
+      color: rgba(59, 35, 20, 0.72);
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+    }
+
+    .footer-links a {
+      font-weight: 700;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 700ms ease, transform 700ms ease;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (min-width: 720px) {
+      .page-shell {
+        padding: 28px 28px 42px;
+      }
+
+      .menu-grid,
+      .feed-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .footer-grid {
+        grid-template-columns: 1.4fr 1fr;
+      }
+    }
+
+    @media (min-width: 960px) {
+      .nav-links {
+        display: inline-flex;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        gap: 20px;
+        min-height: 82vh;
+      }
+
+      .story-grid,
+      .beans-grid,
+      .store-grid {
+        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+        align-items: start;
+      }
+
+      .menu-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .menu-card {
+        grid-template-columns: 160px 1fr auto;
+        align-items: center;
+      }
+
+      .feed-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .hero-art {
+        min-height: 620px;
+      }
+
+      .floating-card {
+        width: min(24vw, 280px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .button,
+      .reveal {
+        transition: none;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell" id="top">
+    <header class="hero">
+      <nav class="nav reveal">
+        <a class="brand-lockup" href="#top" aria-label="Grain &amp; Ground home">
+          <strong>GG</strong>
+          <span>Grain &amp; Ground</span>
+        </a>
+        <div class="nav-links">
+          <a href="#story">Story</a>
+          <a href="#menu">Menu</a>
+          <a href="#beans">Beans</a>
+          <a href="#visit">Visit</a>
+          <a href="https://search.shopping.naver.com/search/all?query=Grain%20%26%20Ground%20coffee%20beans" target="_blank" rel="noreferrer">Smart Store</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Seongsu-dong, Seoul</p>
+          <h1 class="brand-name">Grain &amp; Ground</h1>
+          <p class="slogan">Every cup has a story.</p>
+          <p class="hero-body">A specialty coffee cafe tucked into the alleys of Seongsu-dong. We source green beans directly, roast in small batches, and brew each cup with care.</p>
+          <div class="cta-row">
+            <a class="button primary" href="#menu">Explore the Menu</a>
+            <a class="button secondary" href="https://search.shopping.naver.com/search/all?query=Grain%20%26%20Ground%20coffee%20beans" target="_blank" rel="noreferrer">Shop beans &amp; goods</a>
+          </div>
+          <ul class="fact-row"><li>2021</li><li>Single Seoul location</li><li>Small-batch roasted</li></ul>
+        </div>
+
+        <div class="hero-art reveal" aria-hidden="true">
+          <div class="hero-orb"></div>
+          <div class="floating-card tilt-left"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- steam -->
+  <path d="M100 96 C96 86 101 76 97 66" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M120 90 C116 78 121 66 117 54" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M140 96 C136 86 141 76 137 66" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- saucer -->
+  <ellipse cx="120" cy="176" rx="56" ry="9" fill="#C07A5A"/>
+  <ellipse cx="120" cy="172" rx="46" ry="7" fill="#A0623E"/>
+
+  <!-- cup body -->
+  <path d="M88 118 L94 166 Q120 174 146 166 L152 118 Z" fill="#3B2314"/>
+
+  <!-- cup rim -->
+  <ellipse cx="120" cy="118" rx="32" ry="8" fill="#C07A5A"/>
+
+  <!-- coffee surface -->
+  <ellipse cx="120" cy="118" rx="26" ry="6" fill="#1C0D06"/>
+  <ellipse cx="120" cy="118" rx="22" ry="4.5" fill="none" stroke="#8B5E3C" stroke-width="2" opacity="0.5"/>
+
+  <!-- handle -->
+  <path d="M152 130 C174 126 174 162 152 158" stroke="#C07A5A" stroke-width="7" stroke-linecap="round"/>
+</svg></div>
+          <div class="floating-card primary-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- saucer shadow -->
+  <ellipse cx="120" cy="192" rx="64" ry="8" fill="#3B2314" opacity="0.1"/>
+
+  <!-- saucer -->
+  <ellipse cx="120" cy="188" rx="62" ry="9" fill="#C07A5A"/>
+  <ellipse cx="120" cy="184" rx="52" ry="7" fill="#A0623E"/>
+
+  <!-- cup body (wide latte style) -->
+  <path d="M74 134 L80 178 Q120 188 160 178 L166 134 Z" fill="#3B2314"/>
+
+  <!-- cup rim -->
+  <ellipse cx="120" cy="134" rx="46" ry="10" fill="#C07A5A"/>
+
+  <!-- milk foam surface -->
+  <ellipse cx="120" cy="134" rx="40" ry="8.5" fill="#F0E6D8"/>
+
+  <!-- latte art: simple tulip/leaf -->
+  <ellipse cx="120" cy="134" rx="14" ry="5" fill="#C07A5A" opacity="0.45"/>
+  <ellipse cx="120" cy="128" rx="9" ry="4" fill="#C07A5A" opacity="0.35"/>
+  <ellipse cx="120" cy="123" rx="6" ry="3" fill="#C07A5A" opacity="0.28"/>
+  <!-- center line -->
+  <path d="M120 140 Q120 126 120 118" stroke="#C07A5A" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- handle -->
+  <path d="M166 148 C188 144 190 176 166 172" stroke="#C07A5A" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- steam (subtle, latte is not as hot) -->
+  <path d="M108 118 C105 110 109 102 106 94" stroke="#C07A5A" stroke-width="2" stroke-linecap="round" opacity="0.38"/>
+  <path d="M132 118 C129 110 133 102 130 94" stroke="#C07A5A" stroke-width="2" stroke-linecap="round" opacity="0.38"/>
+</svg></div>
+          <div class="floating-card tilt-right"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- glass shadow -->
+  <ellipse cx="120" cy="202" rx="36" ry="5" fill="#3B2314" opacity="0.1"/>
+
+  <!-- liquid fill (dark cold brew) -->
+  <path d="M90 76 L85 196 Q120 203 155 196 L150 76 Z" fill="#1C0D06" opacity="0.88"/>
+
+  <!-- tonic fizz layer at top -->
+  <path d="M90 76 L91 98 Q120 103 149 98 L150 76 Z" fill="#C07A5A" opacity="0.28"/>
+
+  <!-- ice cube 1 -->
+  <rect x="93" y="118" width="24" height="24" rx="4" fill="#D6CFC8" opacity="0.55" transform="rotate(-8 105 130)"/>
+  <!-- ice cube 2 -->
+  <rect x="120" y="108" width="21" height="21" rx="4" fill="#D6CFC8" opacity="0.45" transform="rotate(7 130 118)"/>
+  <!-- ice cube 3 -->
+  <rect x="100" y="150" width="19" height="19" rx="4" fill="#D6CFC8" opacity="0.38" transform="rotate(-4 109 159)"/>
+
+  <!-- glass outline -->
+  <path d="M86 58 L82 196 Q120 205 158 196 L154 58 Z" stroke="#C07A5A" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- glass rim -->
+  <ellipse cx="120" cy="60" rx="34" ry="7" fill="#F5F0EB" stroke="#C07A5A" stroke-width="2.5"/>
+
+  <!-- straw -->
+  <rect x="136" y="36" width="6" height="96" rx="3" fill="#C07A5A" opacity="0.85" transform="rotate(4 139 84)"/>
+
+  <!-- condensation -->
+  <circle cx="76" cy="132" r="2" fill="#C07A5A" opacity="0.22"/>
+  <circle cx="74" cy="152" r="1.5" fill="#C07A5A" opacity="0.18"/>
+  <circle cx="166" cy="124" r="2" fill="#C07A5A" opacity="0.22"/>
+  <circle cx="164" cy="148" r="1.5" fill="#C07A5A" opacity="0.18"/>
+</svg></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="story">
+        <div class="section-card">
+          <div class="section-head">
+            <p>Brand Story</p>
+            <span></span>
+          </div>
+          <div class="story-grid">
+            <div class="story-copy reveal">
+              <h2>Coffee with context</h2>
+              <p>Great coffee starts at origin. We work directly with producers, roast on-site in small batches, and brew to highlight what makes each lot distinct. Every cup is a link between the people who grow the coffee and the people who drink it.</p>
+            </div>
+            <aside class="story-aside reveal">
+              <strong>At A Glance</strong>
+              <p><b>Founded</b><br />2021</p>
+              <p><b>Audience</b><br />Working professionals and cafe-hopping enthusiasts aged 25–40</p>
+              <div class="pill-row"><span class="pill">Minimal</span><span class="pill">warmth</span><span class="pill">honesty</span><span class="pill">craftsmanship</span></div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="menu">
+        <div class="section-card">
+          <div class="section-head">
+            <p>Menu</p>
+            <span></span>
+          </div>
+          <p class="menu-intro reveal">Hand-drip and espresso drinks that let the coffee speak.</p>
+          <div class="menu-grid">
+            
+        <article class="menu-card reveal">
+          <div class="card-visual" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- steam -->
+  <path d="M100 96 C96 86 101 76 97 66" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M120 90 C116 78 121 66 117 54" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M140 96 C136 86 141 76 137 66" stroke="#C07A5A" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- saucer -->
+  <ellipse cx="120" cy="176" rx="56" ry="9" fill="#C07A5A"/>
+  <ellipse cx="120" cy="172" rx="46" ry="7" fill="#A0623E"/>
+
+  <!-- cup body -->
+  <path d="M88 118 L94 166 Q120 174 146 166 L152 118 Z" fill="#3B2314"/>
+
+  <!-- cup rim -->
+  <ellipse cx="120" cy="118" rx="32" ry="8" fill="#C07A5A"/>
+
+  <!-- coffee surface -->
+  <ellipse cx="120" cy="118" rx="26" ry="6" fill="#1C0D06"/>
+  <ellipse cx="120" cy="118" rx="22" ry="4.5" fill="none" stroke="#8B5E3C" stroke-width="2" opacity="0.5"/>
+
+  <!-- handle -->
+  <path d="M152 130 C174 126 174 162 152 158" stroke="#C07A5A" stroke-width="7" stroke-linecap="round"/>
+</svg></div>
+          <div class="card-copy">
+            <div class="card-meta">Ethiopia Yirgacheffe</div>
+            <h3>Signature Hand Drip</h3>
+            <p>Brewed to order with Ethiopia Yirgacheffe-bright citrus, soft florals, and a clean finish.</p>
+          </div>
+          <div class="card-price">₩7,500</div>
+        </article>
+        
+
+        <article class="menu-card reveal">
+          <div class="card-visual" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- glass shadow -->
+  <ellipse cx="120" cy="202" rx="36" ry="5" fill="#3B2314" opacity="0.1"/>
+
+  <!-- liquid fill (dark cold brew) -->
+  <path d="M90 76 L85 196 Q120 203 155 196 L150 76 Z" fill="#1C0D06" opacity="0.88"/>
+
+  <!-- tonic fizz layer at top -->
+  <path d="M90 76 L91 98 Q120 103 149 98 L150 76 Z" fill="#C07A5A" opacity="0.28"/>
+
+  <!-- ice cube 1 -->
+  <rect x="93" y="118" width="24" height="24" rx="4" fill="#D6CFC8" opacity="0.55" transform="rotate(-8 105 130)"/>
+  <!-- ice cube 2 -->
+  <rect x="120" y="108" width="21" height="21" rx="4" fill="#D6CFC8" opacity="0.45" transform="rotate(7 130 118)"/>
+  <!-- ice cube 3 -->
+  <rect x="100" y="150" width="19" height="19" rx="4" fill="#D6CFC8" opacity="0.38" transform="rotate(-4 109 159)"/>
+
+  <!-- glass outline -->
+  <path d="M86 58 L82 196 Q120 205 158 196 L154 58 Z" stroke="#C07A5A" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- glass rim -->
+  <ellipse cx="120" cy="60" rx="34" ry="7" fill="#F5F0EB" stroke="#C07A5A" stroke-width="2.5"/>
+
+  <!-- straw -->
+  <rect x="136" y="36" width="6" height="96" rx="3" fill="#C07A5A" opacity="0.85" transform="rotate(4 139 84)"/>
+
+  <!-- condensation -->
+  <circle cx="76" cy="132" r="2" fill="#C07A5A" opacity="0.22"/>
+  <circle cx="74" cy="152" r="1.5" fill="#C07A5A" opacity="0.18"/>
+  <circle cx="166" cy="124" r="2" fill="#C07A5A" opacity="0.22"/>
+  <circle cx="164" cy="148" r="1.5" fill="#C07A5A" opacity="0.18"/>
+</svg></div>
+          <div class="card-copy">
+            <div class="card-meta">Signature Pour</div>
+            <h3>Cold Brew Tonic</h3>
+            <p>Cold brew topped with tonic-crisp, clean, and lightly sparkling.</p>
+          </div>
+          <div class="card-price">₩8,000</div>
+        </article>
+        
+
+        <article class="menu-card reveal">
+          <div class="card-visual" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- background -->
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+
+  <!-- saucer shadow -->
+  <ellipse cx="120" cy="192" rx="64" ry="8" fill="#3B2314" opacity="0.1"/>
+
+  <!-- saucer -->
+  <ellipse cx="120" cy="188" rx="62" ry="9" fill="#C07A5A"/>
+  <ellipse cx="120" cy="184" rx="52" ry="7" fill="#A0623E"/>
+
+  <!-- cup body (wide latte style) -->
+  <path d="M74 134 L80 178 Q120 188 160 178 L166 134 Z" fill="#3B2314"/>
+
+  <!-- cup rim -->
+  <ellipse cx="120" cy="134" rx="46" ry="10" fill="#C07A5A"/>
+
+  <!-- milk foam surface -->
+  <ellipse cx="120" cy="134" rx="40" ry="8.5" fill="#F0E6D8"/>
+
+  <!-- latte art: simple tulip/leaf -->
+  <ellipse cx="120" cy="134" rx="14" ry="5" fill="#C07A5A" opacity="0.45"/>
+  <ellipse cx="120" cy="128" rx="9" ry="4" fill="#C07A5A" opacity="0.35"/>
+  <ellipse cx="120" cy="123" rx="6" ry="3" fill="#C07A5A" opacity="0.28"/>
+  <!-- center line -->
+  <path d="M120 140 Q120 126 120 118" stroke="#C07A5A" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- handle -->
+  <path d="M166 148 C188 144 190 176 166 172" stroke="#C07A5A" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- steam (subtle, latte is not as hot) -->
+  <path d="M108 118 C105 110 109 102 106 94" stroke="#C07A5A" stroke-width="2" stroke-linecap="round" opacity="0.38"/>
+  <path d="M132 118 C129 110 133 102 130 94" stroke="#C07A5A" stroke-width="2" stroke-linecap="round" opacity="0.38"/>
+</svg></div>
+          <div class="card-copy">
+            <div class="card-meta">house blend</div>
+            <h3>Cafe Latte</h3>
+            <p>Espresso with steamed milk, made with our house blend-smooth and balanced.</p>
+          </div>
+          <div class="card-price">₩6,500</div>
+        </article>
+        
+
+        <article class="menu-card reveal">
+          <div class="card-visual" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <circle cx="120" cy="120" r="110" fill="#F5F0EB"/>
+  <ellipse cx="120" cy="186" rx="58" ry="8" fill="#3B2314" opacity="0.08"/>
+  <path d="M78 112 C78 82 98 64 120 64 C142 64 162 82 162 112 C162 142 146 170 120 188 C94 170 78 142 78 112 Z" fill="#C07A5A" opacity="0.92"/>
+  <path d="M96 116 C96 100 106 88 120 88 C134 88 144 100 144 116 C144 132 134 144 120 156 C106 144 96 132 96 116 Z" fill="#F5F0EB" opacity="0.72"/>
+  <circle cx="120" cy="116" r="20" fill="#3B2314" opacity="0.92"/>
+  <path d="M120 44 C126 58 136 68 150 76" stroke="#C07A5A" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+  <path d="M90 80 C104 72 114 62 120 48" stroke="#C07A5A" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+</svg></div>
+          <div class="card-copy">
+            <div class="card-meta">rotates quarterly</div>
+            <h3>Seasonal Drink</h3>
+            <p>A rotating drink that follows the season and what’s tasting best right now.</p>
+          </div>
+          <div class="card-price">approx. ₩8,500</div>
+        </article>
+        
+          </div>
+        </div>
+      </section>
+
+      <section id="beans">
+        <div class="section-card">
+          <div class="section-head">
+            <p>Beans &amp; Goods</p>
+            <span></span>
+          </div>
+          <div class="beans-grid">
+            <div class="beans-copy reveal">
+              <h2>Brew at home</h2>
+              <p>Bring Grain &amp; Ground to your home routine. We roast in small batches and pack fresh for shipping. Choose whole beans for everyday brewing, or drip bags for travel and gifting-made with the same care as our in-cafe menu.</p>
+              <ul><li>House-roasted beans (100g / 200g)</li><li>Drip bag sets for travel or gifting</li><li>Solid-color tumblers in two sizes</li></ul>
+              <div class="cta-row">
+                <a class="button primary" href="https://search.shopping.naver.com/search/all?query=Grain%20%26%20Ground%20coffee%20beans" target="_blank" rel="noreferrer">Shop beans &amp; goods</a>
+                <a class="button secondary" href="#visit">Plan Your Visit</a>
+              </div>
+            </div>
+            <div class="goods-panel reveal">
+              
+        <div class="goods-row">
+          <div>
+            <strong>House-roasted beans</strong>
+            <span>100g / 200g</span>
+          </div>
+          <em>₩12,000–₩18,000</em>
+        </div>
+        
+
+        <div class="goods-row">
+          <div>
+            <strong>Drip bag set</strong>
+            <span>5-pack</span>
+          </div>
+          <em>₩15,000</em>
+        </div>
+        
+
+        <div class="goods-row">
+          <div>
+            <strong>Brand tumbler</strong>
+            <span>solid color, two sizes</span>
+          </div>
+          <em>₩32,000</em>
+        </div>
+        
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="visit">
+        <div class="section-card">
+          <div class="section-head">
+            <p>Store Info</p>
+            <span></span>
+          </div>
+          <div class="store-grid">
+            <div class="store-copy reveal">
+              <h2>Visit us</h2>
+              <p>You’ll find us on a quiet side street in Seongsu-dong, tucked just off the main road. The space is small and calm, and every drink is made to order. Drop in when you’re nearby.</p>
+            </div>
+            <aside class="store-panel reveal">
+              <strong>Directions</strong>
+              <p><b>Address</b><br />Seongsu-dong, Seongdong-gu, Seoul (independent shop tucked in a side street)</p>
+              <p><b>Hours</b><br />Hours</p>
+              <p><b>Note</b><br />We’re tucked into the alleys-look for the minimal signage.</p>
+              <p><a href="https://www.google.com/maps/search/?api=1&query=Seongsu-dong%2C%20Seongdong-gu%2C%20Seoul%20%28independent%20shop%20tucked%20in%20a%20side%20street%29" target="_blank" rel="noreferrer">Open map and directions</a></p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="instagram">
+        <div class="section-card">
+          <div class="section-head">
+            <p>Instagram</p>
+            <span></span>
+          </div>
+          <div class="feed-copy reveal">
+            <h2>Follow along</h2>
+            <p>See what we’re roasting and pouring each week. We share new arrivals, seasonal drinks, and small moments from the cafe.</p>
+          </div>
+          <div class="feed-grid">
+            <div class="feed-tile reveal"><span>Latest roasts</span></div>
+<div class="feed-tile reveal"><span>Seasonal menu</span></div>
+<div class="feed-tile reveal"><span>Behind the bar</span></div>
+<div class="feed-tile reveal"><span>Origin stories</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-grid">
+        <div class="footer-brand reveal">
+          <strong>Grain &amp; Ground</strong>
+          <p>Every cup has a story.</p>
+        </div>
+        <div class="reveal">
+          <div class="footer-links">
+            <a href="https://www.instagram.com/grainground/" target="_blank" rel="noreferrer">Instagram</a>
+            <a href="mailto:hello@grainground.kr">hello@grainground.kr</a>
+            <a href="https://search.shopping.naver.com/search/all?query=Grain%20%26%20Ground%20coffee%20beans" target="_blank" rel="noreferrer">Order Beans</a>
+            <a href="https://www.google.com/maps/search/?api=1&query=Seongsu-dong%2C%20Seongdong-gu%2C%20Seoul%20%28independent%20shop%20tucked%20in%20a%20side%20street%29" target="_blank" rel="noreferrer">Directions</a>
+          </div>
+          <p class="footer-note">Single-scroll landing page for a warm, editorial coffee brand experience.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.querySelectorAll(".reveal").forEach(function (node) {
+          node.classList.add("is-visible");
+        });
+        return;
+      }
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
+
+      document.querySelectorAll(".reveal").forEach(function (node) {
+        observer.observe(node);
+      });
+    }());
+  </script>
+</body>
+</html>
