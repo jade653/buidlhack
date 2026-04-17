@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  tee-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tee-engine-local:latest
+    environment:
+      - NEAR_AI_API_KEY=${NEAR_AI_API_KEY:-}
+    restart: unless-stopped
