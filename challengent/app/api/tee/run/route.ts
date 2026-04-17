@@ -17,6 +17,8 @@ export const runtime = "nodejs";
 type TeeRunRequest = {
   baseGuide?: string;
   challengeId?: string;
+  submitterId?: string;
+  principalType?: "human" | "agent";
   source?: "inline" | "github";
   github?: {
     repo?: string;
@@ -33,6 +35,11 @@ type TeeRunResponse = {
   token_usage: Record<string, unknown>;
   error: string | null;
   metadata: Record<string, unknown>;
+};
+
+type PersistedSubmissionInfo = {
+  submissionId: string;
+  rank: number | null;
 };
 
 const ALLOWED_EXTENSIONS = new Set([".py", ".md", ".json", ".txt"]);
@@ -233,10 +240,103 @@ print(json.dumps({
   });
 }
 
+async function persistToSupabase(args: {
+  challengeId: string;
+  submitterId: string;
+  principalType: "human" | "agent";
+  source: "inline" | "github";
+  executionMode: "near-ai-cloud" | "mock";
+  result: TeeRunResponse;
+}): Promise<PersistedSubmissionInfo | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  const headers = {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const totalTokens = Number(args.result.token_usage?.total_tokens ?? 0);
+  const outputText =
+    typeof args.result.output === "string" ? args.result.output : null;
+
+  const insertResponse = await fetch(`${supabaseUrl}/rest/v1/submissions`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      challenge_id: args.challengeId,
+      submitter_id: args.submitterId,
+      principal_type: args.principalType,
+      source: args.source,
+      execution_mode: args.executionMode,
+      status: args.result.status,
+      score: args.result.score,
+      wall_time_sec: args.result.wall_time_sec,
+      total_tokens: totalTokens,
+      token_usage: args.result.token_usage,
+      output_text: outputText,
+      output_json: args.result.output,
+    }),
+  });
+  if (!insertResponse.ok) {
+    const message = await insertResponse.text();
+    throw new Error(`Supabase insert failed: ${message}`);
+  }
+
+  const inserted = (await insertResponse.json()) as Array<{ id: string }>;
+  const submissionId = inserted[0]?.id;
+  if (!submissionId) {
+    throw new Error("Supabase insert succeeded but submission id missing.");
+  }
+
+  const rpcResponse = await fetch(
+    `${supabaseUrl}/rest/v1/rpc/recompute_leaderboard`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ target_challenge_id: args.challengeId }),
+    },
+  );
+  if (!rpcResponse.ok) {
+    const message = await rpcResponse.text();
+    throw new Error(`Supabase leaderboard recompute failed: ${message}`);
+  }
+
+  const rankResponse = await fetch(
+    `${supabaseUrl}/rest/v1/leaderboard_entries?submission_id=eq.${submissionId}&select=rank`,
+    {
+      method: "GET",
+      headers,
+    },
+  );
+  if (!rankResponse.ok) {
+    const message = await rankResponse.text();
+    throw new Error(`Supabase rank query failed: ${message}`);
+  }
+  const rankRows = (await rankResponse.json()) as Array<{ rank: number | null }>;
+  const rank = rankRows[0]?.rank ?? null;
+
+  return { submissionId, rank };
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as TeeRunRequest;
   const baseGuide = body.baseGuide?.trim();
   const source = body.source ?? "inline";
+  const challengeId = body.challengeId?.trim() || "unknown-challenge";
+  const submitterId = body.submitterId?.trim() || "anonymous";
+  const requestedPrincipal = body.principalType;
+  const principalType: "human" | "agent" =
+    requestedPrincipal === "human" || requestedPrincipal === "agent"
+      ? requestedPrincipal
+      : source === "github"
+        ? "agent"
+        : "human";
 
   if (!baseGuide) {
     return NextResponse.json(
@@ -256,6 +356,7 @@ export async function POST(request: Request) {
   const hasNearApiKey = Boolean(process.env.NEAR_AI_API_KEY);
   const allowMockExecution = process.env.ALLOW_MOCK_EXECUTION === "1";
   const useMockClient = !hasNearApiKey && allowMockExecution;
+  const executionMode = useMockClient ? "mock" : "near-ai-cloud";
 
   let tempRoot = "";
 
@@ -308,15 +409,25 @@ export async function POST(request: Request) {
       challengePath,
       useMockClient,
     });
+    const persisted = await persistToSupabase({
+      challengeId,
+      submitterId,
+      principalType,
+      source,
+      executionMode,
+      result,
+    });
 
     return NextResponse.json({
       ok: true,
-      challengeId: body.challengeId ?? null,
+      challengeId,
       harnessSource,
       result,
       mockMode: useMockClient,
-      executionMode: useMockClient ? "mock" : "near-ai-cloud",
+      executionMode,
       source,
+      submissionId: persisted?.submissionId ?? null,
+      rank: persisted?.rank ?? null,
     });
   } catch (error) {
     const message =

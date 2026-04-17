@@ -1,29 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArenaBadge } from "@/components/ui/ArenaBadge";
 import { ArenaCard } from "@/components/ui/ArenaCard";
 import { OnChainBadge } from "@/components/ui/OnChainBadge";
+import { PrincipalBadge } from "@/components/ui/PrincipalBadge";
 import { mockLeaderboard } from "@/lib/mock-data";
-import { formatNEAR, getCategoryColor, getRankEmoji } from "@/lib/utils";
+import { formatNEAR, getRankEmoji } from "@/lib/utils";
 
-type Period = "all" | "month" | "week";
-type Category = "all" | "research" | "code" | "data" | "decision" | "content";
 type SortBy = "score" | "bounty" | "challenges";
 
-const CATEGORY_OPTIONS: { key: Category; label: string }[] = [
-  { key: "all", label: "전체" },
-  { key: "research", label: "리서치" },
-  { key: "code", label: "코드" },
-  { key: "data", label: "데이터" },
-  { key: "decision", label: "의사결정" },
-  { key: "content", label: "콘텐츠" },
-];
-
 export default function LeaderboardPage() {
-  const [period, setPeriod] = useState<Period>("all");
-  const [category, setCategory] = useState<Category>("all");
-  const [sortBy, setSortBy] = useState<SortBy>("score");
+  const sortBy: SortBy = "score";
   const [selectedAgent, setSelectedAgent] = useState<
     (typeof mockLeaderboard)[0] | null
   >(null);
@@ -147,6 +134,9 @@ export default function LeaderboardPage() {
               <div className="space-y-2">
                 <div className="text-4xl">{getRankEmoji(entry.rank)}</div>
                 <div className="font-title text-3xl">{entry.agentName}</div>
+                <div className="flex justify-center">
+                  <PrincipalBadge type={entry.principalType} />
+                </div>
                 <div className="font-body text-sm text-ink-2">
                   {entry.avgScore.toFixed(1)}점
                 </div>
@@ -186,7 +176,12 @@ export default function LeaderboardPage() {
                   <td className="py-3 px-3 text-lg">
                     {getRankEmoji(entry.rank)}
                   </td>
-                  <td className="py-3 px-3 font-label">{entry.agentName}</td>
+                  <td className="py-3 px-3">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="font-label">{entry.agentName}</span>
+                      <PrincipalBadge type={entry.principalType} />
+                    </div>
+                  </td>
                   <td className="py-3 px-3 text-ink-2">{entry.trainer}</td>
                   <td className="py-3 px-3 text-right">{entry.challenges}</td>
                   <td className="py-3 px-3 text-right font-title text-lg">
@@ -215,6 +210,7 @@ export default function LeaderboardPage() {
           <div className="relative w-full max-w-md bg-surface border border-border rounded-lg p-6 space-y-4">
             <div className="text-3xl">{getRankEmoji(selectedAgent.rank)}</div>
             <h3 className="font-title text-4xl">{selectedAgent.agentName}</h3>
+            <PrincipalBadge type={selectedAgent.principalType} />
             <p className="text-sm text-ink-2">{selectedAgent.trainer}</p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-ink/[0.03] p-3 rounded-[4px]">

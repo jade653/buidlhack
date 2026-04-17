@@ -88,7 +88,7 @@ export default function SubmitPage() {
   const [phase, setPhase] = useState<Phase>("submit");
   const [baseGuide, setBaseGuide] = useState(challengeGuide);
   const [submissionSource, setSubmissionSource] =
-    useState<SubmissionSource>("inline");
+    useState<SubmissionSource>("github");
   const [githubRepo, setGithubRepo] = useState("9oodam/agent-set-1");
   const [githubRef, setGithubRef] = useState("main");
   const [githubPackagePath, setGithubPackagePath] = useState(".");
@@ -100,6 +100,8 @@ export default function SubmitPage() {
   const [executionMode, setExecutionMode] = useState<
     "near-ai-cloud" | "mock" | null
   >(null);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [currentRank, setCurrentRank] = useState<number | null>(null);
   const [outputViewMode, setOutputViewMode] = useState<OutputViewMode>("text");
   const [runError, setRunError] = useState<string | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -133,6 +135,8 @@ export default function SubmitPage() {
     setRunError(null);
     setRunResult(null);
     setExecutionMode(null);
+    setSubmissionId(null);
+    setCurrentRank(null);
     setOutputViewMode("text");
     setRuntimeEvents([]);
     setLastControlSignal(null);
@@ -148,6 +152,8 @@ export default function SubmitPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           challengeId: id,
+          submitterId: "demo-user",
+          principalType: submissionSource === "github" ? "agent" : "human",
           baseGuide,
           source: submissionSource,
           github:
@@ -172,6 +178,8 @@ export default function SubmitPage() {
       setExecutionMode(
         (data.executionMode as "near-ai-cloud" | "mock" | undefined) ?? null,
       );
+      setSubmissionId((data.submissionId as string | null | undefined) ?? null);
+      setCurrentRank((data.rank as number | null | undefined) ?? null);
       setOutputViewMode("text");
       addRuntimeEvent(
         `Execution finished · status=${result.status} · wall=${result.wall_time_sec.toFixed(2)}s`,
@@ -307,13 +315,13 @@ export default function SubmitPage() {
                   Submission Source
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <ArenaButton
+                  {/* <ArenaButton
                     variant={submissionSource === "inline" ? "red" : "ghost"}
                     size="sm"
                     onClick={() => setSubmissionSource("inline")}
                   >
                     Platform Template
-                  </ArenaButton>
+                  </ArenaButton> */}
                   <ArenaButton
                     variant={submissionSource === "github" ? "red" : "ghost"}
                     size="sm"
@@ -614,11 +622,18 @@ export default function SubmitPage() {
                 <div className="font-label uppercase tracking-wider text-ink-2">
                   Current Rank
                 </div>
-                <div className="font-title text-5xl text-red">🥈 #2</div>
+                <div className="font-title text-5xl text-red">
+                  {currentRank ? `#${currentRank}` : "—"}
+                </div>
                 <div className="text-sm text-ink-2">
                   / {challenge.participants}
                 </div>
                 <OnChainBadge className="justify-center" />
+                {submissionId && (
+                  <div className="text-xs text-ink-3 font-mono break-all">
+                    Submission ID: {submissionId}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -683,6 +698,8 @@ export default function SubmitPage() {
                 onClick={() => {
                   setPhase("submit");
                   setRunResult(null);
+                  setSubmissionId(null);
+                  setCurrentRank(null);
                 }}
               >
                 Retry

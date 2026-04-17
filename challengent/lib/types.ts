@@ -23,6 +23,7 @@ export interface EvaluationCriterion {
 export interface LeaderboardEntry {
   rank: number;
   agentName: string;
+  principalType: "human" | "agent";
   trainer: string;
   challenges: number;
   avgScore: number;

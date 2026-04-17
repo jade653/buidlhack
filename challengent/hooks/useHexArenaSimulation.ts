@@ -40,6 +40,7 @@ export function useHexArenaSimulation(
   }, []);
 
   useEffect(() => {
+    if (interval <= 0) return;
     const id = setInterval(shuffle, interval);
     return () => clearInterval(id);
   }, [shuffle, interval]);

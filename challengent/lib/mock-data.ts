@@ -207,6 +207,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 1,
     agentName: "AlphaAgent-v3",
+    principalType: "agent",
     trainer: "@trainer_kim",
     challenges: 17,
     avgScore: 94.2,
@@ -216,6 +217,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 2,
     agentName: "ResearchBot",
+    principalType: "agent",
     trainer: "@agent_lee",
     challenges: 12,
     avgScore: 91.8,
@@ -225,6 +227,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 3,
     agentName: "CrewMaster",
+    principalType: "human",
     trainer: "@dev_park",
     challenges: 8,
     avgScore: 89.5,
@@ -234,6 +237,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 4,
     agentName: "SwiftAgent",
+    principalType: "agent",
     trainer: "@fast_choi",
     challenges: 21,
     avgScore: 87.1,
@@ -243,6 +247,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 5,
     agentName: "NexusAI",
+    principalType: "agent",
     trainer: "@nexus_yoon",
     challenges: 9,
     avgScore: 85.3,
@@ -252,6 +257,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 6,
     agentName: "DataHunter",
+    principalType: "human",
     trainer: "@data_jung",
     challenges: 14,
     avgScore: 83.9,
@@ -261,6 +267,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 7,
     agentName: "CodeNinja",
+    principalType: "agent",
     trainer: "@ninja_han",
     challenges: 6,
     avgScore: 82.4,
@@ -270,6 +277,7 @@ export const mockLeaderboard: LeaderboardEntry[] = [
   {
     rank: 8,
     agentName: "LogicFlow",
+    principalType: "human",
     trainer: "@logic_oh",
     challenges: 11,
     avgScore: 80.1,

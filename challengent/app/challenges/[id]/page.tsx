@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { mockChallenges } from "@/lib/mock-data";
@@ -8,6 +8,10 @@ import { AgentSlot, CATEGORY_LABELS, EvaluationCriterion } from "@/lib/types";
 import { getCategoryColor, formatNEAR, getRankEmoji } from "@/lib/utils";
 import { ArenaButton } from "@/components/ui/ArenaButton";
 import { ArenaBadge } from "@/components/ui/ArenaBadge";
+import {
+  PrincipalBadge,
+  type PrincipalType,
+} from "@/components/ui/PrincipalBadge";
 import { OnChainBadge } from "@/components/ui/OnChainBadge";
 import AgentRadarGraph from "@/components/arena/AgentRadarGraph";
 import { useHexArenaSimulation } from "@/hooks/useHexArenaSimulation";
@@ -45,6 +49,41 @@ const getAgentRadarScores = (
   });
 };
 
+type ApiLeaderboardRow = {
+  rank: number;
+  submission_id: string;
+  submitter_id: string;
+  principal_type: PrincipalType;
+  score: number | null;
+  wall_time_sec: number;
+  total_tokens: number;
+};
+
+type BoardParticipant = {
+  key: string;
+  rank: number;
+  displayName: string;
+  principalType: PrincipalType;
+  qualityScore: number;
+  wallTimeSec: number;
+  totalTokens: number;
+  finalScore: number;
+};
+
+function formatDisplayId(raw: string) {
+  const trimmed = raw.trim();
+  if (trimmed.length <= 18) return trimmed;
+  return `${trimmed.slice(0, 10)}…${trimmed.slice(-6)}`;
+}
+
+function mockSpeedSecondsFromRank(rank: number) {
+  return Number((1.6 + rank * 0.9).toFixed(1));
+}
+
+function mockTokensFromRank(rank: number) {
+  return 2200 + rank * 1375;
+}
+
 export default function ChallengeDetailPage() {
   const params = useParams();
   const id = params.id as string;
@@ -53,36 +92,105 @@ export default function ChallengeDetailPage() {
     mockChallenges.find((c) => c.id === id) || mockChallenges[0];
   const challengeSpec = challenge.inputOutputSpec;
   const radarAxisLabels = challenge.evaluationCriteria.map((item) => item.label);
-  const agents = useHexArenaSimulation();
-  const [selectedAgentNames, setSelectedAgentNames] = useState<string[]>([]);
+  const [liveRows, setLiveRows] = useState<ApiLeaderboardRow[] | null>(null);
+  const useLiveBoard = liveRows !== null;
+  const simInterval = useLiveBoard ? 0 : 3000;
+  const agents = useHexArenaSimulation(undefined, simInterval);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
-  const getSpeed = (rank: number) => (1.6 + rank * 0.9).toFixed(1);
-  const getTokens = (rank: number) => (2200 + rank * 1375).toLocaleString();
-  const sortedAgents = useMemo(
-    () => [...agents].sort((a, b) => a.rank - b.rank),
-    [agents],
+  useEffect(() => {
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const response = await fetch(`/api/challenges/${id}/leaderboard`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as {
+          ok?: boolean;
+          rows?: ApiLeaderboardRow[];
+        };
+
+        if (!data.ok || !Array.isArray(data.rows)) {
+          setLiveRows(null);
+          return;
+        }
+
+        setLiveRows(data.rows);
+      } catch {
+        if (!controller.signal.aborted) {
+          setLiveRows(null);
+        }
+      }
+    })();
+
+    return () => controller.abort();
+  }, [id]);
+
+  const boardParticipants: BoardParticipant[] = useMemo(() => {
+    if (liveRows) {
+      return liveRows.map((row) => {
+        const quality = row.score ?? 0;
+        return {
+          key: row.submission_id,
+          rank: row.rank,
+          displayName: formatDisplayId(row.submitter_id),
+          principalType: row.principal_type,
+          qualityScore: quality,
+          wallTimeSec: row.wall_time_sec,
+          totalTokens: row.total_tokens,
+          finalScore: quality,
+        };
+      });
+    }
+
+    const sorted = [...agents].sort((a, b) => a.rank - b.rank);
+    return sorted.map((agent) => {
+      const wallTimeSec = mockSpeedSecondsFromRank(agent.rank);
+      const totalTokens = mockTokensFromRank(agent.rank);
+      return {
+        key: agent.name,
+        rank: agent.rank,
+        displayName: agent.name,
+        principalType: "agent" as const,
+        qualityScore: agent.score,
+        wallTimeSec,
+        totalTokens,
+        finalScore: agent.score,
+      };
+    });
+  }, [agents, liveRows]);
+
+  const sortedParticipants = useMemo(
+    () => [...boardParticipants].sort((a, b) => a.rank - b.rank),
+    [boardParticipants],
   );
 
-  const selectedAgents = useMemo(() => {
-    return sortedAgents.filter((agent) =>
-      selectedAgentNames.includes(agent.name),
-    );
-  }, [selectedAgentNames, sortedAgents]);
+  const selectedParticipants = useMemo(() => {
+    return sortedParticipants.filter((row) => selectedKeys.includes(row.key));
+  }, [selectedKeys, sortedParticipants]);
 
   const radarSeries = useMemo(() => {
-    return selectedAgents.map((agent, index) => ({
-      id: agent.name,
-      label: `${getRankEmoji(agent.rank)} ${agent.name}`,
-      values: getAgentRadarScores(agent, challenge.evaluationCriteria),
-      color: RADAR_COLORS[index % RADAR_COLORS.length],
-    }));
-  }, [selectedAgents, challenge.evaluationCriteria]);
+    return selectedParticipants.map((participant, index) => {
+      const slot: AgentSlot = {
+        position: "top",
+        rank: participant.rank,
+        name: participant.displayName,
+        score: participant.qualityScore,
+      };
+      return {
+        id: participant.key,
+        label: `${getRankEmoji(participant.rank)} ${participant.displayName}`,
+        values: getAgentRadarScores(slot, challenge.evaluationCriteria),
+        color: RADAR_COLORS[index % RADAR_COLORS.length],
+      };
+    });
+  }, [selectedParticipants, challenge.evaluationCriteria]);
 
-  const toggleAgentSelection = (agentName: string) => {
-    setSelectedAgentNames((prev) =>
-      prev.includes(agentName)
-        ? prev.filter((name) => name !== agentName)
-        : [...prev, agentName],
+  const toggleParticipantSelection = (key: string) => {
+    setSelectedKeys((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
   };
 
@@ -155,7 +263,7 @@ export default function ChallengeDetailPage() {
             <h3 className="font-title text-2xl">Live Ranking Board</h3>
 
             <span className="text-xs uppercase tracking-[0.12em] text-ink-3">
-              Live
+              {useLiveBoard ? "Supabase" : "Demo"}
             </span>
           </div>
 
@@ -172,7 +280,7 @@ export default function ChallengeDetailPage() {
               <thead>
                 <tr className="font-label uppercase tracking-wider text-[11px] text-ink-3 border-b border-border">
                   <th className="text-left py-3 px-2">Rank</th>
-                  <th className="text-left py-3 px-2">Agent</th>
+                  <th className="text-left py-3 px-2">Participant</th>
                   <th className="text-right py-3 px-2">Quality</th>
                   <th className="text-right py-3 px-2">Speed</th>
                   <th className="text-right py-3 px-2">Tokens</th>
@@ -181,33 +289,40 @@ export default function ChallengeDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {sortedAgents.map((agent) => {
-                  const isSelected = selectedAgentNames.includes(agent.name);
+                {sortedParticipants.map((participant) => {
+                  const isSelected = selectedKeys.includes(participant.key);
                   return (
                     <tr
-                      key={agent.name}
+                      key={participant.key}
                       className={`border-b border-border/50 transition-all duration-300 cursor-pointer ${
                         isSelected ? "bg-red/5" : "hover:bg-ink/[0.02]"
                       }`}
-                      onClick={() => toggleAgentSelection(agent.name)}
+                      onClick={() => toggleParticipantSelection(participant.key)}
                     >
                       <td className="py-3 px-2 text-lg">
-                        {getRankEmoji(agent.rank)}
+                        {getRankEmoji(participant.rank)}
                       </td>
-                      <td className="py-3 px-2 font-label font-semibold">
-                        {agent.name}
+                      <td className="py-3 px-2">
+                        <div className="flex flex-col gap-1.5">
+                          <div className="font-label font-semibold">
+                            {participant.displayName}
+                          </div>
+                          <div>
+                            <PrincipalBadge type={participant.principalType} />
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3 px-2 text-right font-title text-lg">
-                        {agent.score.toFixed(1)}
+                        {participant.qualityScore.toFixed(1)}
                       </td>
                       <td className="py-3 px-2 text-right text-ink-2">
-                        {getSpeed(agent.rank)}s
+                        {participant.wallTimeSec.toFixed(1)}s
                       </td>
                       <td className="py-3 px-2 text-right text-ink-2">
-                        {getTokens(agent.rank)}
+                        {participant.totalTokens.toLocaleString()}
                       </td>
                       <td className="py-3 px-2 text-right font-title text-lg text-red">
-                        {agent.score.toFixed(1)}
+                        {participant.finalScore.toFixed(1)}
                       </td>
                       <td className="py-3 px-2 text-right">
                         <OnChainBadge />
@@ -220,7 +335,7 @@ export default function ChallengeDetailPage() {
           </div>
 
           <p className="mt-3 text-xs text-ink-3">
-            Click an agent to display it on the graph.
+            Click a row to display it on the graph.
           </p>
         </section>
       </div>
